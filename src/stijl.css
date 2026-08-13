@@ -1,0 +1,70 @@
+:root {
+  --leisteen: #1E2A2C;
+  --papier:   #F3F4EF;
+  --kaart:    #FFFFFF;
+  --lijn:     #D8DBD3;
+  --amber:    #C98A2B;
+  --kriek:    #9E2B3B;
+  --grijs:    #6B7671;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--leisteen);
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.scherm { max-width: 720px; margin: 0 auto; padding: 32px 20px 64px; }
+.scherm.smal { max-width: 420px; padding-top: 64px; }
+
+h1 { font-size: 24px; margin: 4px 0 0; }
+h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; margin: 0 0 10px; }
+
+.eyebrow {
+  font-size: 10px; letter-spacing: .24em; text-transform: uppercase;
+  color: var(--amber); margin: 0;
+}
+.kop-rij { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.stil { color: var(--grijs); font-size: 13px; }
+.fout { color: var(--kriek); font-size: 13px; }
+.cijfer { font-family: var(--mono); font-size: 13px; color: var(--grijs); }
+code { font-family: var(--mono); font-size: 12px; background: var(--papier); padding: 1px 4px; border-radius: 3px; }
+
+.kaart {
+  background: var(--kaart); border: 1px solid var(--lijn); border-radius: 4px;
+  padding: 20px; margin-top: 20px;
+}
+.kaart.controle { border-style: dashed; }
+
+label { display: block; margin-bottom: 14px; }
+label span {
+  display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--grijs); margin-bottom: 4px;
+}
+input {
+  width: 100%; padding: 9px 10px; border: 1px solid var(--lijn); border-radius: 3px;
+  font: inherit; background: var(--kaart); color: var(--leisteen);
+}
+input:focus { outline: none; border-color: var(--amber); }
+
+button {
+  font: inherit; font-size: 14px; padding: 9px 14px; border-radius: 3px; cursor: pointer;
+  background: var(--leisteen); color: var(--papier); border: 1px solid var(--leisteen);
+}
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.stille-knop { background: var(--kaart); color: var(--leisteen); border: 1px solid var(--lijn); }
+
+.lijst { list-style: none; margin: 12px 0 0; padding: 0; }
+.lijst li {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 7px 0; border-bottom: 1px solid var(--papier);
+}
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
