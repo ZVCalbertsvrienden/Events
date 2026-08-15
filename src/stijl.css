@@ -56,7 +56,8 @@ code { font-family: var(--mono); font-size: 12px; background: var(--papier); pad
   content: ''; position: absolute; left: 50%; bottom: -34px; width: 120px; height: 120px;
   transform: translateX(-50%); border: 2px solid rgba(242,245,239,.22); border-radius: 50%;
 }
-.veld-rij { position: relative; z-index: 1; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.veld-rij { position: relative; z-index: 1; display: flex; align-items: center; gap: 22px; }
+.veld-tekst { min-width: 0; }
 .veld-eyebrow { font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--goud); margin: 0; }
 .veld-titel { font-size: 27px; font-weight: 600; margin: 8px 0 6px; line-height: 1.15; }
 .veld-datum { font-family: var(--mono); font-size: 13px; color: #9DC3AC; margin: 0; }
