@@ -149,13 +149,12 @@ function EventBlok({ ev }) {
   return (
     <article className="veld">
       <div className="veld-rij">
-        <div>
-          <p className="veld-eyebrow">ZVC Albertsvrienden</p>
-          <div className="veld-titel">{ev.titel}</div>
-          <p className="veld-datum">{datum}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
-        </div>
         <div className="veld-merk">
           <img src={BASIS + 'ranch1000.png'} alt="Ranch Lucky Luc 1000" />
+        </div>
+        <div>
+          <div className="veld-titel">{ev.titel}</div>
+          <p className="veld-datum">{datum}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
         </div>
       </div>
     </article>
