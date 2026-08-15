@@ -152,7 +152,7 @@ function EventBlok({ ev }) {
         <div className="veld-merk">
           <img src={BASIS + 'ranch1000.png'} alt="Ranch Lucky Luc 1000" />
         </div>
-        <div>
+        <div className="veld-tekst">
           <div className="veld-titel">{ev.titel}</div>
           <p className="veld-datum">{datum}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
         </div>
