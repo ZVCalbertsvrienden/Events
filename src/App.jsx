@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
 
+const BASIS = import.meta.env.BASE_URL;
+
+const SPONSORS = [
+  { naam: '', logo: '', url: '' },
+  { naam: '', logo: '', url: '' },
+  { naam: '', logo: '', url: '' },
+];
+
 export default function App() {
   const [sessie, setSessie] = useState(null);
   const [bezig, setBezig] = useState(true);
@@ -28,7 +36,7 @@ function Aanmelden() {
     setStand('versturen');
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + import.meta.env.BASE_URL },
+      options: { emailRedirectTo: window.location.origin + BASIS },
     });
     if (error) { setFout(error.message); setStand('fout'); }
     else setStand('verstuurd');
@@ -36,24 +44,22 @@ function Aanmelden() {
 
   return (
     <div className="scherm smal">
-      <p className="eyebrow">Albertvrienden</p>
+      <img className="clublogo" src={BASIS + 'clublogo.png'} alt="ZVC Albertsvrienden" style={{ width: 72, height: 72 }} />
+      <p className="eyebrow" style={{ marginTop: 14 }}>ZVC Albertsvrienden</p>
       <h1>Aanmelden</h1>
 
       {stand === 'verstuurd' ? (
         <div className="kaart">
           <p>Er is een inlogknop verstuurd naar <strong>{email}</strong>. Open die mail op dit toestel.</p>
-          <p className="stil">
-            Niets gekregen? Kijk in de spam. Zolang er geen eigen mailserver is ingesteld, komt de mail
-            van Supabase en belandt hij daar vaak.
-          </p>
+          <p className="stil">Niets gekregen? Kijk in de spam.</p>
           <button className="stille-knop" onClick={() => setStand('invullen')}>Ander adres proberen</button>
         </div>
       ) : (
         <form className="kaart" onSubmit={stuur}>
           <label>
             <span>E-mailadres</span>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                   placeholder="jij@voorbeeld.be" autoComplete="email" />
+            <input id="email" name="email" type="email" required value={email}
+                   onChange={(e) => setEmail(e.target.value)} placeholder="jij@voorbeeld.be" autoComplete="email" />
           </label>
           <button type="submit" disabled={stand === 'versturen'}>
             {stand === 'versturen' ? 'Versturen…' : 'Stuur me een inlogknop'}
@@ -70,6 +76,7 @@ function Binnen({ sessie }) {
   const [gezin, setGezin] = useState(null);
   const [events, setEvents] = useState([]);
   const [laden, setLaden] = useState(true);
+  const [fout, setFout] = useState('');
   const [naam, setNaam] = useState('');
 
   const haalOp = async () => {
@@ -78,8 +85,11 @@ function Binnen({ sessie }) {
       supabase.from('gezin').select('*').eq('profiel_id', sessie.user.id).maybeSingle(),
       supabase.from('event').select('*').order('jaar', { ascending: false }),
     ]);
+    if (g.error) console.error('gezin:', g.error);
+    if (e.error) console.error('event:', e.error);
     setGezin(g.data ?? null);
     setEvents(e.data ?? []);
+    setFout(e.error ? `${e.error.code}: ${e.error.message}` : '');
     setLaden(false);
   };
 
@@ -94,51 +104,80 @@ function Binnen({ sessie }) {
   return (
     <div className="scherm">
       <header>
-        <p className="eyebrow">Albertvrienden</p>
         <div className="kop-rij">
-          <h1>{gezin ? gezin.naam : 'Welkom'}</h1>
-          <button className="stille-knop" onClick={() => supabase.auth.signOut()}>Afmelden</button>
+          <div>
+            <p className="eyebrow">ZVC Albertsvrienden</p>
+            <h1>{gezin ? gezin.naam : 'Welkom'}</h1>
+          </div>
+          <div className="kop-rechts">
+            <img className="clublogo" src={BASIS + 'clublogo.png'} alt="ZVC Albertsvrienden" />
+            <button className="stille-knop" onClick={() => supabase.auth.signOut()}>Afmelden</button>
+          </div>
         </div>
         <p className="stil">Aangemeld als {sessie.user.email}</p>
       </header>
 
       {laden && <p className="stil">Gegevens ophalen…</p>}
+      {fout && <p className="fout">{fout}</p>}
 
       {!laden && !gezin && (
         <form className="kaart" onSubmit={maakGezin}>
           <h2>Onder welke naam kennen we jullie?</h2>
-          <p className="stil">Zoals op de dranklijst, bijvoorbeeld "Vael Jürgen" of "Depuydt Sarah".</p>
+          <p className="stil">Zoals op de dranklijst, bijvoorbeeld "Vael Jürgen".</p>
           <label>
             <span>Gezinsnaam</span>
-            <input required value={naam} onChange={(e) => setNaam(e.target.value)} />
+            <input id="gezinsnaam" name="gezinsnaam" required value={naam} onChange={(e) => setNaam(e.target.value)} />
           </label>
           <button type="submit">Gezin aanmaken</button>
         </form>
       )}
 
-      {!laden && gezin && (
-        <section className="kaart">
-          <h2>Evenementen</h2>
-          {events.length === 0 ? (
-            <p className="stil">
-              Er staat nog geen event klaar. Maak er een aan in Supabase onder Table Editor → event,
-              en geef jezelf daarna een rij in <code>rol</code> met rol <code>admin</code>.
-            </p>
-          ) : (
-            <ul className="lijst">
-              {events.map((ev) => (
-                <li key={ev.id}>
-                  <span>{ev.titel}</span>
-                  <span className="cijfer">{ev.datum ?? '—'}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
+      {!laden && gezin && (events.length === 0
+        ? <div className="kaart"><h2>Evenementen</h2><p className="stil">Er staat nog geen event klaar.</p></div>
+        : events.map((ev) => <EventBlok key={ev.id} ev={ev} />))}
 
       <RlsControle />
+      <Sponsors />
     </div>
+  );
+}
+
+function EventBlok({ ev }) {
+  const datum = ev.datum
+    ? new Date(ev.datum).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long' })
+    : 'datum nog te bepalen';
+  return (
+    <article className="veld">
+      <div className="veld-rij">
+        <div>
+          <p className="veld-eyebrow">ZVC Albertsvrienden</p>
+          <div className="veld-titel">{ev.titel}</div>
+          <p className="veld-datum">{datum}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
+        </div>
+        <div className="veld-merk">
+          <img src={BASIS + 'ranch1000.png'} alt="Ranch Lucky Luc 1000" />
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function Sponsors() {
+  return (
+    <section className="sponsors">
+      <p className="sponsors-kop">Met steun van</p>
+      <div className="sponsor-rij">
+        {SPONSORS.map((s, i) =>
+          s.logo ? (
+            <a key={i} className="sponsor" href={s.url || '#'} target="_blank" rel="noreferrer">
+              <img src={s.logo} alt={s.naam} />
+            </a>
+          ) : (
+            <div key={i} className="sponsor leeg">Sponsorplek vrij</div>
+          )
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -152,19 +191,14 @@ function RlsControle() {
     ]);
     setUitslag({
       kosten: kosten.error ? `geweigerd (${kosten.error.code})` : `${kosten.count} rijen zichtbaar`,
-      inschrijvingen: inschrijvingen.error
-        ? `geweigerd (${inschrijvingen.error.code})`
-        : `${inschrijvingen.count} rijen zichtbaar`,
+      inschrijvingen: inschrijvingen.error ? `geweigerd (${inschrijvingen.error.code})` : `${inschrijvingen.count} rijen zichtbaar`,
     });
   };
 
   return (
     <section className="kaart controle">
       <h2>Controle vóór je echte namen invoert</h2>
-      <p className="stil">
-        Meld je aan met een testaccount zonder rol. De kostenposten horen dan op nul te staan.
-        Zie je er meer, dan staat RLS niet aan.
-      </p>
+      <p className="stil">Meld je aan met een testaccount zonder rol. De kostenposten horen dan op nul te staan.</p>
       <button className="stille-knop" onClick={test}>Toegang testen</button>
       {uitslag && (
         <ul className="lijst">
