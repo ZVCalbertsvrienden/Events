@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
+import Printblad from './Printblad.jsx';
 
 const DIEET = ['Vegetarisch', 'Glutenvrij', 'Lactosevrij', 'Geen varkensvlees', 'Geen vis'];
 
@@ -150,6 +151,14 @@ export default function Inschrijving({ ev, gezin, rollen }) {
   );
 }
 
+<section className="kaart geen-print">
+        <h2>Papieren formulier</h2>
+        <p className="stil">Voor wie liever op papier inschrijft. Print het en bezorg het ingevuld terug.</p>
+        <button className="stille-knop" onClick={() => window.print()}>Formulier afdrukken</button>
+      </section>
+
+      <Printblad ev={ev} opties={opties} functies={functies} />
+  
 function Functies({ functies }) {
   const [open, setOpen] = useState(null);
   return (
