@@ -13,13 +13,13 @@ export default function Printblad({ ev, opties, functies }) {
   return (
     <div className="printblad">
       <div className="pb-kop">
-        <img className="pb-logo" src={BASIS + 'clublogo.png'} alt="" />
+        <img className="pb-logo" src={BASIS + 'ranch1000.png'} alt="" />
         <div className="pb-kop-tekst">
           <div className="pb-club">ZVC Albertsvrienden</div>
           <div className="pb-titel">{ev.titel}</div>
           <div className="pb-sub">{datum}{ev.uur ? ` · vanaf ${ev.uur.slice(0, 5)}` : ''}{ev.locatie ? ` · ${ev.locatie}` : ''}</div>
         </div>
-        <img className="pb-logo" src={BASIS + 'ranch1000.png'} alt="" />
+        <img className="pb-logo" src={BASIS + 'clublogo.png'} alt="" />
       </div>
 
       <div className="pb-blok">
