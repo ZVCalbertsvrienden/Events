@@ -159,6 +159,7 @@ function EventBlok({ ev }) {
   const datum = ev.datum
     ? new Date(ev.datum).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long' })
     : 'datum nog te bepalen';
+  const uur = ev.uur ? ` · vanaf ${ev.uur.slice(0, 5)}` : '';
   return (
     <article className="veld">
       <div className="veld-rij">
@@ -167,7 +168,7 @@ function EventBlok({ ev }) {
         </div>
         <div className="veld-tekst">
           <div className="veld-titel">{ev.titel}</div>
-          <p className="veld-datum">{datum}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
+          <p className="veld-datum">{datum}{uur}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
         </div>
       </div>
     </article>
