@@ -99,3 +99,33 @@ button:focus-visible { outline: 2px solid var(--goud); outline-offset: 2px; }
   .veld-titel { font-size: 22px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
+.drie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.drie input { font-family: var(--mono); text-align: right; }
+.bedrag { font-size: 15px; margin: 4px 0 18px; }
+.knoppen { display: flex; flex-wrap: wrap; gap: 6px; }
+.pil {
+  font-size: 12px; padding: 6px 11px; border-radius: 14px;
+  background: var(--kaart); color: var(--inkt); border: 1px solid var(--lijn);
+}
+.pil.aan { background: var(--gras); color: var(--kalk); border-color: var(--gras); }
+.cat { margin-bottom: 12px; }
+.cat-naam { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--grijs); margin: 12px 0 6px; }
+.rij-knoppen { display: flex; align-items: center; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+.ok { color: var(--blad); font-size: 13px; }
+.functie { border-bottom: 1px solid var(--papier); }
+.functie-kop { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+  background: none; border: none; padding: 10px 0; text-align: left; color: var(--inkt); }
+.functie-naam { font-size: 14px; font-weight: 600; }
+.functie-uit { padding: 4px 0 14px; }
+.taken { margin: 0 0 8px; padding-left: 18px; font-size: 13px; color: var(--grijs); }
+.taken li { padding: 2px 0; }
+.cijfers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+.cijfer-kaart { background: var(--papier); border-radius: 5px; padding: 10px; }
+.cijfer-label { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--grijs); }
+.cijfer-waarde { display: block; font-family: var(--mono); font-size: 19px; margin-top: 2px; }
+.let-op { background: #FBF3DE; border: 1px solid #E7D6AC; border-radius: 5px; padding: 10px 12px; font-size: 13px; }
+.merk { font-size: 10px; background: #FBF3DE; color: #7A5B14; padding: 1px 5px; border-radius: 3px; margin-left: 6px; }
+.dieet { font-size: 12px; color: var(--blad); }
+.helper-rij { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--papier); }
+@media (max-width: 560px) { .cijfers { grid-template-columns: repeat(2, 1fr); } }
