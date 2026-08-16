@@ -157,18 +157,21 @@ function Binnen({ sessie }) {
 
 function EventBlok({ ev }) {
   const datum = ev.datum
-    ? new Date(ev.datum).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long' })
+    ? new Date(ev.datum).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
     : 'datum nog te bepalen';
   const uur = ev.uur ? ` · vanaf ${ev.uur.slice(0, 5)}` : '';
   return (
     <article className="veld">
       <div className="veld-rij">
         <div className="veld-merk">
-          <img src={BASIS + 'ranch1000.png'} alt="Ranch Lucky Luc 1000" />
+          <img src={BASIS + 'ranch1000.png'} alt="" />
         </div>
         <div className="veld-tekst">
+          <p className="veld-org">{ev.organisatie || 'ZVC Albertsvrienden'}</p>
           <div className="veld-titel">{ev.titel}</div>
-          <p className="veld-datum">{datum}{uur}{ev.locatie ? ` · ${ev.locatie}` : ''}</p>
+          <p className="veld-wanneer">{datum}{uur}</p>
+          {ev.locatie && <p className="veld-adres">{ev.locatie}</p>}
+          {ev.leuze && <p className="veld-leuze">{ev.leuze}</p>}
         </div>
       </div>
     </article>
