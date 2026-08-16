@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
+import Inschrijving from './Inschrijving.jsx';
 
 const BASIS = import.meta.env.BASE_URL;
 
@@ -75,20 +76,22 @@ function Aanmelden() {
 function Binnen({ sessie }) {
   const [gezin, setGezin] = useState(null);
   const [events, setEvents] = useState([]);
+  const [rollen, setRollen] = useState([]);
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState('');
   const [naam, setNaam] = useState('');
 
   const haalOp = async () => {
     setLaden(true);
-    const [g, e] = await Promise.all([
+    const [g, e, r] = await Promise.all([
       supabase.from('gezin').select('*').eq('profiel_id', sessie.user.id).maybeSingle(),
       supabase.from('event').select('*').order('jaar', { ascending: false }),
+      supabase.from('rol').select('*').eq('profiel_id', sessie.user.id),
     ]);
-    if (g.error) console.error('gezin:', g.error);
     if (e.error) console.error('event:', e.error);
     setGezin(g.data ?? null);
     setEvents(e.data ?? []);
+    setRollen(r.data ?? []);
     setFout(e.error ? `${e.error.code}: ${e.error.message}` : '');
     setLaden(false);
   };
@@ -100,6 +103,9 @@ function Binnen({ sessie }) {
     const { error } = await supabase.from('gezin').insert({ naam, profiel_id: sessie.user.id });
     if (error) alert(error.message); else { setNaam(''); haalOp(); }
   };
+
+  const ev = events[0];
+  const mijnRollen = ev ? rollen.filter((r) => r.event_id === ev.id) : [];
 
   return (
     <div className="scherm">
@@ -132,9 +138,16 @@ function Binnen({ sessie }) {
         </form>
       )}
 
-      {!laden && gezin && (events.length === 0
-        ? <div className="kaart"><h2>Evenementen</h2><p className="stil">Er staat nog geen event klaar.</p></div>
-        : events.map((ev) => <EventBlok key={ev.id} ev={ev} />))}
+      {!laden && gezin && !ev && (
+        <div className="kaart"><h2>Evenementen</h2><p className="stil">Er staat nog geen event klaar.</p></div>
+      )}
+
+      {!laden && gezin && ev && (
+        <>
+          <EventBlok ev={ev} />
+          <Inschrijving ev={ev} gezin={gezin} rollen={mijnRollen} />
+        </>
+      )}
 
       <RlsControle />
       <Sponsors />
