@@ -158,12 +158,6 @@ export default function Inschrijving({ ev, gezin, rollen }) {
       </section>
 
       <Printblad ev={ev} opties={opties} functies={functies} />
-
-      <Functies functies={functies} />
-      {organisator && <Organisatoren ev={ev} functies={functies} />}
-    </>
-  );
-}
   
 function Functies({ functies }) {
   const [open, setOpen] = useState(null);
