@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap');
 :root {
   --gras:      #0F3D2C;
   --gras2:     #12472F;
@@ -43,11 +44,9 @@ code { font-family: var(--mono); font-size: 12px; background: var(--papier); pad
 .kaart { background: var(--kaart); border: 1px solid var(--lijn); border-radius: 6px; padding: 20px; margin-top: 20px; }
 .kaart.controle { border-style: dashed; background: transparent; }
 
-.veld {
-  position: relative; overflow: hidden; border-radius: 8px; margin-top: 20px;
+.veld { position: relative; overflow: hidden; border-radius: 8px; margin-top: 20px;
   background: repeating-linear-gradient(90deg, var(--gras) 0 30px, var(--gras2) 30px 60px);
-  color: var(--kalk); padding: 26px 24px 30px;
-}
+  color: var(--kalk); padding: 18px 24px 20px; }
 .veld::before {
   content: ''; position: absolute; left: 0; right: 0; bottom: 26px;
   border-top: 2px solid rgba(242,245,239,.28);
@@ -59,8 +58,11 @@ code { font-family: var(--mono); font-size: 12px; background: var(--papier); pad
 .veld-rij { position: relative; z-index: 1; display: flex; align-items: center; gap: 22px; }
 .veld-tekst { min-width: 0; }
 .veld-eyebrow { font-size: 10px; letter-spacing: .24em; text-transform: uppercase; color: var(--goud); margin: 0; }
-.veld-titel { font-size: 27px; font-weight: 600; margin: 8px 0 6px; line-height: 1.15; }
-.veld-datum { font-family: var(--mono); font-size: 13px; color: #9DC3AC; margin: 0; }
+.veld-titel { font-size: 24px; font-weight: 600; margin: 2px 0 3px; line-height: 1.1; }
+.veld-org { font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--goud); margin: 0 0 3px; }
+.veld-wanneer { font-family: var(--mono); font-size: 14px; font-weight: 600; color: #C8E0D2; margin: 5px 0 1px; }
+.veld-adres { font-family: var(--mono); font-size: 12px; color: #9DC3AC; margin: 0; }
+.veld-leuze { font-family: 'Caveat', cursive; font-size: 23px; color: var(--goud); margin: 5px 0 0; line-height: 1.1; }
 .veld-merk { flex-shrink: 0; }
 .veld-merk img { display: block; width: 132px; height: 132px; object-fit: contain; }
 
