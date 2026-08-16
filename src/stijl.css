@@ -127,5 +127,36 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .let-op { background: #FBF3DE; border: 1px solid #E7D6AC; border-radius: 5px; padding: 10px 12px; font-size: 13px; }
 .merk { font-size: 10px; background: #FBF3DE; color: #7A5B14; padding: 1px 5px; border-radius: 3px; margin-left: 6px; }
 .dieet { font-size: 12px; color: var(--blad); }
+
+.printblad { display: none; }
+
+@media print {
+  body { background: #fff; }
+  .scherm > *, .kaart, .veld, .sponsors, header { display: none !important; }
+  .printblad { display: block !important; font-size: 10pt; color: #000; }
+  .geen-print { display: none !important; }
+  @page { margin: 12mm; }
+}
+
+.pb-kop { display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
+.pb-club { font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; }
+.pb-titel { font-size: 15pt; font-weight: 700; line-height: 1.2; }
+.pb-sub { font-size: 9pt; }
+.pb-hok { font-size: 8pt; border: 1px solid #000; padding: 6px 10px; }
+.pb-sectie { font-size: 9pt; font-weight: 700; margin: 12px 0 5px;
+  border-bottom: 1px solid #000; padding-bottom: 2px; }
+.pb-blok { display: flex; flex-wrap: wrap; gap: 6px 18px; }
+.pb-veld { flex: 1; min-width: 190px; margin-bottom: 6px; }
+.pb-veld.breed { flex-basis: 100%; }
+.pb-veld span { display: block; font-size: 8pt; }
+.pb-lijn { border-bottom: 1px solid #555; height: 15px; }
+.pb-lijn.kort { width: 52px; border-bottom: 1px solid #000; }
+.pb-vinkjes { display: flex; flex-wrap: wrap; gap: 3px 14px; }
+.pb-vink { display: inline-flex; align-items: center; gap: 5px; font-size: 9pt; margin: 0 0 3px; }
+.pb-vak { width: 11px; height: 11px; border: 1px solid #000; display: inline-block; }
+.pb-drank { display: flex; gap: 10px; margin-bottom: 3px; align-items: baseline; }
+.pb-cat { font-size: 8pt; font-weight: 700; width: 92px; flex-shrink: 0; }
+.pb-voet { margin-top: 12px; padding-top: 6px; border-top: 1px solid #000; font-size: 8pt; }
 .helper-rij { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--papier); }
 @media (max-width: 560px) { .cijfers { grid-template-columns: repeat(2, 1fr); } }
