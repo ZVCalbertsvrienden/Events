@@ -76,21 +76,17 @@ export default function Printblad({ ev, opties, functies }) {
 
      <div className="pb-sectie">In te vullen door het bestuur</div>
       <div className="pb-ontvangst">
-        <div className="pb-bedrag">
-          <span>Verschuldigd bedrag</span>
+        <div className="pb-kolom">
+          <span className="pb-label">Verschuldigd bedrag</span>
           <div className="pb-bedrag-vak">€</div>
-        </div>
-        <div className="pb-bedrag">
-          <span>Voldaan op</span>
-          <div className="pb-bedrag-vak">____ / ____ / 20____</div>
-        </div>
-        <div className="pb-handtekening">
           <div className="pb-hand-vak" />
-          <span>Handtekening inschrijver</span>
+          <span className="pb-label">Handtekening inschrijver</span>
         </div>
-        <div className="pb-handtekening">
+        <div className="pb-kolom">
+          <span className="pb-label">Voldaan op</span>
+          <div className="pb-bedrag-vak pb-datum">___ / ___ / 20___</div>
           <div className="pb-hand-vak" />
-          <span>Handtekening bestuurslid</span>
+          <span className="pb-label">Handtekening bestuurslid</span>
         </div>
       </div>
 
