@@ -164,13 +164,12 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .pb-vak { width: 11px; height: 11px; border: 1px solid #000; display: inline-block; }
 .pb-drank { display: flex; gap: 10px; margin-bottom: 3px; align-items: baseline; }
 .pb-cat { font-size: 8.5pt; font-weight: 700; width: 92px; flex-shrink: 0; }
-.pb-ontvangst { display: flex; gap: 14px; align-items: flex-end; }
-.pb-bedrag { flex: 1; }
-.pb-bedrag span { display: block; font-size: 8.5pt; }
-.pb-bedrag-vak { border: 1.5px solid #000; height: 32px; font-size: 12pt;
-  padding: 4px 8px; margin-bottom: 4px; }
-.pb-datum-lijn { font-size: 8.5pt; }
-.pb-handtekening { flex: 1; }
-.pb-hand-vak { border: 1px solid #000; height: 46px; margin-bottom: 3px; }
+.pb-ontvangst { display: flex; gap: 22px; }
+.pb-kolom { flex: 1; }
+.pb-label { display: block; font-size: 8.5pt; margin-bottom: 2px; }
+.pb-bedrag-vak { border: 1.5px solid #000; height: 30px; font-size: 12pt;
+  padding: 3px 8px; margin-bottom: 10px; white-space: nowrap; }
+.pb-bedrag-vak.pb-datum { font-size: 10.5pt; letter-spacing: .04em; }
+.pb-hand-vak { border: 1px solid #000; height: 44px; margin-bottom: 2px; }
 .pb-handtekening span { font-size: 8pt; }
 .pb-voet { margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; font-size: 8pt; }
