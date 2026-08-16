@@ -138,25 +138,39 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
   @page { margin: 12mm; }
 }
 
-.pb-kop { display: flex; justify-content: space-between; align-items: flex-start;
-  border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 10px; }
-.pb-club { font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; }
-.pb-titel { font-size: 15pt; font-weight: 700; line-height: 1.2; }
-.pb-sub { font-size: 9pt; }
-.pb-hok { font-size: 8pt; border: 1px solid #000; padding: 6px 10px; }
-.pb-sectie { font-size: 9pt; font-weight: 700; margin: 12px 0 5px;
-  border-bottom: 1px solid #000; padding-bottom: 2px; }
+.pb-kop { display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: #0F3D2C; color: #fff; padding: 8px 12px; margin-bottom: 10px;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.pb-kop-tekst { text-align: center; flex: 1; }
+.pb-logo { width: 46px; height: 46px; object-fit: contain; flex-shrink: 0; }
+.pb-club { font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: #E9B949; }
+.pb-titel { font-size: 17pt; font-weight: 700; line-height: 1.15; }
+.pb-sub { font-size: 9.5pt; }
+.pb-sectie { font-size: 11pt; font-weight: 700; margin: 13px 0 6px;
+  border-bottom: 1.5px solid #000; padding-bottom: 2px; }
 .pb-blok { display: flex; flex-wrap: wrap; gap: 6px 18px; }
 .pb-veld { flex: 1; min-width: 190px; margin-bottom: 6px; }
 .pb-veld.breed { flex-basis: 100%; }
-.pb-veld span { display: block; font-size: 8pt; }
+.pb-veld span { display: block; font-size: 8.5pt; }
 .pb-lijn { border-bottom: 1px solid #555; height: 15px; }
-.pb-lijn.kort { width: 52px; border-bottom: 1px solid #000; }
+.pb-tel-rij { display: flex; gap: 14px; }
+.pb-tel { flex: 1; border: 1.5px solid #000; padding: 8px 10px; display: flex;
+  flex-direction: column; align-items: center; }
+.pb-tel-hok { width: 46px; height: 34px; border: 1.5px solid #000; margin-bottom: 5px; }
+.pb-tel-naam { font-size: 11pt; font-weight: 700; }
+.pb-tel-sub { font-size: 8pt; }
 .pb-vinkjes { display: flex; flex-wrap: wrap; gap: 3px 14px; }
 .pb-vink { display: inline-flex; align-items: center; gap: 5px; font-size: 9pt; margin: 0 0 3px; }
 .pb-vak { width: 11px; height: 11px; border: 1px solid #000; display: inline-block; }
 .pb-drank { display: flex; gap: 10px; margin-bottom: 3px; align-items: baseline; }
-.pb-cat { font-size: 8pt; font-weight: 700; width: 92px; flex-shrink: 0; }
-.pb-voet { margin-top: 12px; padding-top: 6px; border-top: 1px solid #000; font-size: 8pt; }
-.helper-rij { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--papier); }
-@media (max-width: 560px) { .cijfers { grid-template-columns: repeat(2, 1fr); } }
+.pb-cat { font-size: 8.5pt; font-weight: 700; width: 92px; flex-shrink: 0; }
+.pb-ontvangst { display: flex; gap: 14px; align-items: flex-end; }
+.pb-bedrag { flex: 1; }
+.pb-bedrag span { display: block; font-size: 8.5pt; }
+.pb-bedrag-vak { border: 1.5px solid #000; height: 32px; font-size: 12pt;
+  padding: 4px 8px; margin-bottom: 4px; }
+.pb-datum-lijn { font-size: 8.5pt; }
+.pb-handtekening { flex: 1; }
+.pb-hand-vak { border: 1px solid #000; height: 46px; margin-bottom: 3px; }
+.pb-handtekening span { font-size: 8pt; }
+.pb-voet { margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; font-size: 8pt; }
