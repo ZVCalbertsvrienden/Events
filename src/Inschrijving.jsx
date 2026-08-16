@@ -145,12 +145,6 @@ export default function Inschrijving({ ev, gezin, rollen }) {
         </div>
       </section>
 
-      <Functies functies={functies} />
-      {organisator && <Organisatoren ev={ev} functies={functies} />}
-    </>
-  );
-}
-
 <section className="kaart geen-print">
         <h2>Papieren formulier</h2>
         <p className="stil">Voor wie liever op papier inschrijft. Print het en bezorg het ingevuld terug.</p>
@@ -158,7 +152,13 @@ export default function Inschrijving({ ev, gezin, rollen }) {
       </section>
 
       <Printblad ev={ev} opties={opties} functies={functies} />
-  
+
+  <Functies functies={functies} />
+      {organisator && <Organisatoren ev={ev} functies={functies} />}
+    </>
+  );
+}  
+
 function Functies({ functies }) {
   const [open, setOpen] = useState(null);
   return (
