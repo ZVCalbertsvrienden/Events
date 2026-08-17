@@ -46,6 +46,8 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
   const klaar = taken.filter((t) => t.klaar).length;
 
   return (
+    <>
+    <TakenPrint ev={ev} functies={functies} taken={taken} />
     <section className="kaart geen-print">
       <div className="kop-tussen">
         <h2>Taken</h2>
@@ -124,6 +126,7 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
         </>
       )}
     </section>
+    </>
   );
 }
 
@@ -245,8 +248,6 @@ export function Rollen({ ev, functies }) {
   };
 
   return (
-    <>
-    <TakenPrint ev={ev} functies={functies} taken={taken} />
     <section className="kaart geen-print">
       <h2>Rollen en functies toekennen</h2>
       <p className="stil">
@@ -323,6 +324,5 @@ export function Rollen({ ev, functies }) {
         krijgt automatisch toegang als organisator.
       </p>
     </section>
-    </>
   );
 }
