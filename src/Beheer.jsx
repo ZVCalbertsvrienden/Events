@@ -80,7 +80,8 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
           {zichtbaar.map((f) => {
             const voor = vanFunctie(f.naam, 'voor');
             const tijdens = vanFunctie(f.naam, 'tijdens');
-            if (voor.length + tijdens.length === 0) return null;
+            const na = vanFunctie(f.naam, 'na');
+            if (voor.length + tijdens.length + na.length === 0) return null;
             const mag = isOrganisator || mijnFuncties.includes(f.naam);
             return (
               <div key={f.naam} className="taakgroep">
@@ -88,7 +89,7 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
                   <span className="functie-naam">{f.naam}</span>
                   {!mag && <span className="stil">alleen lezen</span>}
                 </div>
-                {[['Vóór de BBQ', voor], ['Tijdens de BBQ', tijdens]].map(([label, lijst]) =>
+                {[['Vóór de BBQ', voor], ['Tijdens de BBQ', tijdens], ['Na de BBQ', na]].map(([label, lijst]) =>
                   lijst.length === 0 ? null : (
                     <div key={label}>
                       <p className="cat-naam">{label}</p>
@@ -134,7 +135,8 @@ export function TakenPrint({ ev, functies, taken }) {
       {functies.map((f) => {
         const voor = taken.filter((t) => t.functie === f.naam && t.fase === 'voor');
         const tijdens = taken.filter((t) => t.functie === f.naam && t.fase === 'tijdens');
-        if (voor.length + tijdens.length === 0) return null;
+        const na = taken.filter((t) => t.functie === f.naam && t.fase === 'na');
+        if (voor.length + tijdens.length + na.length === 0) return null;
         return (
           <div key={f.naam} className="tb-blad">
             <div className="tb-kop">
@@ -145,7 +147,7 @@ export function TakenPrint({ ev, functies, taken }) {
               <div className="tb-event">{ev.titel}</div>
             </div>
             <p className="tb-kern">{f.kerntaak}</p>
-            {[['Vóór de BBQ', voor], ['Tijdens de BBQ', tijdens]].map(([label, lijst]) =>
+            {[['Vóór de BBQ', voor], ['Tijdens de BBQ', tijdens], ['Na de BBQ', na]].map(([label, lijst]) =>
               lijst.length === 0 ? null : (
                 <div key={label}>
                   <div className="pb-sectie">{label}</div>
