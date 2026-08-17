@@ -214,3 +214,16 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .tb-lijn { border-bottom: 1px solid #999; height: 22px; }
 .pb-handtekening span { font-size: 8pt; }
 .pb-voet { margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; font-size: 8pt; }
+.tb-rechts { text-align: right; }
+.tb-namen { display: flex; flex-wrap: wrap; gap: 3px; justify-content: flex-end; margin-top: 4px; }
+.tb-naam { font-size: 7.5pt; border: 1px solid #000; border-radius: 9px; padding: 1px 7px; }
+.tb-trefwoorden { font-size: 10pt; font-style: italic; margin: 0 0 4px;
+  border-bottom: 2px solid #000; padding-bottom: 4px; }
+.tb-intro { font-size: 9.5pt; margin: 0 0 4px; border-bottom: 2px solid #000; padding-bottom: 6px; }
+.tb-sectie { display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11pt; font-weight: 700; margin: 12px 0 5px;
+  border-bottom: 1.5px solid #000; padding-bottom: 2px; }
+.tb-gedelegeerd { font-size: 7.5pt; font-weight: 400; color: #555; }
+.tb-taak { display: flex; align-items: baseline; gap: 8px; font-size: 10.5pt; padding: 4px 0; }
+.tb-titel { flex: 1; }
+.tb-stippel { width: 150px; border-bottom: 1px dotted #000; flex-shrink: 0; align-self: flex-end; }
