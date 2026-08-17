@@ -173,5 +173,28 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
   padding: 3px 8px; margin-bottom: 10px; white-space: nowrap; }
 .pb-bedrag-vak.pb-datum { font-size: 10.5pt; letter-spacing: .04em; }
 .pb-hand-vak { border: 1px solid #000; height: 44px; margin-bottom: 2px; }
+.kop-tussen { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.schakel { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.schakel span { font-size: 13px; color: var(--grijs); text-transform: none; letter-spacing: 0; }
+.schakel input { width: auto; }
+.taakgroep { border-top: 1px solid var(--lijn); padding: 12px 0 6px; }
+.taakgroep-kop { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.taak { display: flex; align-items: flex-start; gap: 9px; padding: 4px 0; margin: 0; }
+.taak input { width: auto; margin-top: 2px; flex-shrink: 0; }
+.taak span { font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--inkt); margin: 0; }
+.taak.af span { text-decoration: line-through; color: var(--grijs); }
+.functie-stand { border: 1px solid var(--lijn); border-radius: 5px; padding: 4px 12px; margin: 12px 0 4px; }
+.fs-rij { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0;
+  border-bottom: 1px solid var(--papier); font-size: 13px; }
+.fs-rij:last-child { border-bottom: none; }
+.fs-vast { font-size: 13px; color: var(--blad); font-weight: 600; }
+.lid { border-bottom: 1px solid var(--papier); }
+.lid-kop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  width: 100%; background: none; border: none; padding: 9px 0; text-align: left;
+  color: var(--inkt); font-size: 14px; }
+.lid-uit { padding: 2px 0 14px; }
+.pil.uit { opacity: .45; }
+.pil:disabled { cursor: not-allowed; }
+.ster { color: var(--goud); font-size: 9px; }
 .pb-handtekening span { font-size: 8pt; }
 .pb-voet { margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; font-size: 8pt; }
