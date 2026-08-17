@@ -245,6 +245,8 @@ export function Rollen({ ev, functies }) {
   };
 
   return (
+    <>
+    <TakenPrint ev={ev} functies={functies} taken={taken} />
     <section className="kaart geen-print">
       <h2>Rollen en functies toekennen</h2>
       <p className="stil">
@@ -321,5 +323,6 @@ export function Rollen({ ev, functies }) {
         krijgt automatisch toegang als organisator.
       </p>
     </section>
+    </>
   );
 }
