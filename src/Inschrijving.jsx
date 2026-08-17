@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
 import Printblad from './Printblad.jsx';
+import { Taken, Rollen } from './Beheer.jsx';
 
 const DIEET = ['Vegetarisch', 'Glutenvrij', 'Lactosevrij', 'Geen varkensvlees', 'Geen vis'];
 
@@ -153,11 +154,15 @@ export default function Inschrijving({ ev, gezin, rollen }) {
 
       <Printblad ev={ev} opties={opties} functies={functies} />
 
-  <Functies functies={functies} />
+ <Functies functies={functies} />
+      <Taken ev={ev} functies={functies}
+             mijnFuncties={rollen.filter((r) => r.functie).map((r) => r.functie)}
+             isOrganisator={organisator} />
       {organisator && <Organisatoren ev={ev} functies={functies} />}
+      {organisator && <Rollen ev={ev} functies={functies} />}
     </>
   );
-}  
+}
 
 function Functies({ functies }) {
   const [open, setOpen] = useState(null);
