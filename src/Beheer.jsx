@@ -8,13 +8,17 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
   const [fout, setFout] = useState('');
   const [bezig, setBezig] = useState(false);
   const [alles, setAlles] = useState(false);
-
+  const [houders, setHouders] = useState([]);
+  
   const haal = async () => {
     setLaden(true);
-    const { data, error } = await supabase
-      .from('taak').select('*').eq('event_id', ev.id).order('volgorde');
-    if (error) setFout(error.message);
-    setTaken(data ?? []);
+    const [t, r] = await Promise.all([
+      supabase.from('taak').select('*').eq('event_id', ev.id).order('volgorde'),
+      supabase.from('rol').select('functie, profiel_id, gezin:profiel_id(naam)').eq('event_id', ev.id),
+    ]);
+    if (t.error) setFout(t.error.message);
+    setTaken(t.data ?? []);
+    setHouders(r.data ?? []);
     setLaden(false);
   };
 
@@ -47,7 +51,7 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
 
   return (
     <>
-    <TakenPrint ev={ev} functies={functies} taken={taken} />
+    <TakenPrint ev={ev} functies={functies} taken={taken} houders={houders} />
     <section className="kaart geen-print">
       <div className="kop-tussen">
         <h2>Taken</h2>
@@ -131,8 +135,10 @@ export function Taken({ ev, functies, mijnFuncties, isOrganisator }) {
 }
 
 /* ─────────────────────────  printblad taken  ───────────────────────── */
-export function TakenPrint({ ev, functies, taken }) {
+export function TakenPrint({ ev, functies, taken, houders = [] }) {
   if (taken.length === 0) return null;
+  const namenVan = (f) =>
+    houders.filter((h) => h.functie === f).map((h) => h.gezin?.naam).filter(Boolean);
   return (
     <div className="takenblad">
       {functies.map((f) => {
@@ -140,6 +146,7 @@ export function TakenPrint({ ev, functies, taken }) {
         const tijdens = taken.filter((t) => t.functie === f.naam && t.fase === 'tijdens');
         const na = taken.filter((t) => t.functie === f.naam && t.fase === 'na');
         if (voor.length + tijdens.length + na.length === 0) return null;
+        const namen = namenVan(f.naam);
         return (
           <div key={f.naam} className="tb-blad">
             <div className="tb-kop">
@@ -147,24 +154,36 @@ export function TakenPrint({ ev, functies, taken }) {
                 <div className="pb-club">{ev.organisatie || 'ZVC Albertsvrienden'}</div>
                 <div className="tb-functie">{f.naam}</div>
               </div>
-              <div className="tb-event">{ev.titel}</div>
+              <div className="tb-rechts">
+                <div className="tb-event">{ev.titel}</div>
+                {namen.length > 0 && (
+                  <div className="tb-namen">
+                    {namen.map((n) => <span key={n} className="tb-naam">{n}</span>)}
+                  </div>
+                )}
+              </div>
             </div>
-            <p className="tb-kern">{f.kerntaak}</p>
+            <p className="tb-trefwoorden">{f.kerntaak}</p>
+            {f.kerntaak_lang && <p className="tb-intro">{f.kerntaak_lang}</p>}
             {[['Vóór de BBQ', voor], ['Tijdens de BBQ', tijdens], ['Na de BBQ', na]].map(([label, lijst]) =>
               lijst.length === 0 ? null : (
                 <div key={label}>
-                  <div className="pb-sectie">{label}</div>
+                  <div className="tb-sectie">
+                    <span>{label}</span>
+                    <span className="tb-gedelegeerd">Gedelegeerd aan</span>
+                  </div>
                   {lijst.map((t) => (
                     <div key={t.id} className="tb-taak">
                       <span className="pb-vak" />
-                      <span>{t.titel}</span>
+                      <span className="tb-titel">{t.titel}</span>
+                      <span className="tb-stippel" />
                     </div>
                   ))}
                 </div>
               )
             )}
             <div className="tb-vrij">
-              <div className="pb-sectie">Eigen notities</div>
+              <div className="tb-sectie"><span>Eigen notities</span></div>
               {[0, 1, 2, 3, 4].map((i) => <div key={i} className="tb-lijn" />)}
             </div>
           </div>
