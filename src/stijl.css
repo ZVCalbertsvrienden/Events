@@ -196,5 +196,21 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .pil.uit { opacity: .45; }
 .pil:disabled { cursor: not-allowed; }
 .ster { color: var(--goud); font-size: 9px; }
+.takenblad { display: none; }
+@media print {
+  .takenblad { display: block !important; }
+  .printblad { display: none !important; }
+}
+.tb-blad { page-break-after: always; }
+.tb-blad:last-child { page-break-after: auto; }
+.tb-kop { display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+.tb-functie { font-size: 20pt; font-weight: 700; line-height: 1.1; }
+.tb-event { font-size: 9pt; text-align: right; }
+.tb-kern { font-size: 10pt; font-style: italic; margin: 0 0 4px; }
+.tb-taak { display: flex; align-items: flex-start; gap: 8px; font-size: 10.5pt; padding: 4px 0; }
+.tb-taak .pb-vak { width: 13px; height: 13px; margin-top: 2px; flex-shrink: 0; }
+.tb-vrij { margin-top: 14px; }
+.tb-lijn { border-bottom: 1px solid #999; height: 22px; }
 .pb-handtekening span { font-size: 8pt; }
 .pb-voet { margin-top: 10px; padding-top: 5px; border-top: 1px solid #000; font-size: 8pt; }
