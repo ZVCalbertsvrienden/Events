@@ -8,7 +8,7 @@ const DIEET = ['Vegetarisch', 'Glutenvrij', 'Lactosevrij', 'Geen varkensvlees', 
 const euro = (v) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(v || 0);
 
-export default function Inschrijving({ ev, gezin, rollen }) {
+export default function Inschrijving({ ev, gezin, rollen, tab }) {
   const [opties, setOpties] = useState([]);
   const [functies, setFuncties] = useState([]);
   const [rij, setRij] = useState(null);
@@ -65,8 +65,9 @@ export default function Inschrijving({ ev, gezin, rollen }) {
     return acc;
   }, {});
 
-  return (
+ return (
     <>
+      {tab === 'inschrijving' && (
       <section className="kaart">
         <h2>Onze inschrijving</h2>
 
@@ -146,20 +147,26 @@ export default function Inschrijving({ ev, gezin, rollen }) {
         </div>
       </section>
 
-<section className="kaart geen-print">
-        <h2>Papieren formulier</h2>
-        <p className="stil">Voor wie liever op papier inschrijft. Print het en bezorg het ingevuld terug.</p>
-        <button className="stille-knop" onClick={() => window.print()}>Formulier afdrukken</button>
-      </section>
+)}
+
+      {tab === 'formulieren' && (
+        <section className="kaart geen-print">
+          <h2>Papieren formulier</h2>
+          <p className="stil">Voor wie liever op papier inschrijft. Print het en bezorg het ingevuld terug.</p>
+          <button className="stille-knop" onClick={() => window.print()}>Formulier afdrukken</button>
+        </section>
+      )}
 
       <Printblad ev={ev} opties={opties} functies={functies} />
 
- <Functies functies={functies} />
-      <Taken ev={ev} functies={functies}
-             mijnFuncties={rollen.filter((r) => r.functie).map((r) => r.functie)}
-             isOrganisator={organisator} />
-      {organisator && <Organisatoren ev={ev} functies={functies} />}
-      {organisator && <Rollen ev={ev} functies={functies} />}
+      {tab === 'taken' && <Functies functies={functies} />}
+      {tab === 'taken' && (
+        <Taken ev={ev} functies={functies}
+               mijnFuncties={rollen.filter((r) => r.functie).map((r) => r.functie)}
+               isOrganisator={organisator} />
+      )}
+      {tab === 'overzicht' && organisator && <Organisatoren ev={ev} functies={functies} />}
+      {tab === 'overzicht' && organisator && <Rollen ev={ev} functies={functies} />}
     </>
   );
 }
