@@ -227,3 +227,7 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .tb-taak { display: flex; align-items: baseline; gap: 8px; font-size: 10.5pt; padding: 4px 0; }
 .tb-titel { flex: 1; }
 .tb-stippel { width: 150px; border-bottom: 1px dotted #000; flex-shrink: 0; align-self: flex-end; }
+.menu { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 16px; }
+.menu-knop { font-size: 13px; padding: 8px 14px; border-radius: 20px;
+  background: var(--kaart); color: var(--inkt); border: 1px solid var(--lijn); }
+.menu-knop.aan { background: var(--gras); color: var(--kalk); border-color: var(--gras); }
