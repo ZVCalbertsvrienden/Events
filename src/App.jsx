@@ -80,6 +80,7 @@ function Binnen({ sessie }) {
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState('');
   const [naam, setNaam] = useState('');
+  const [tab, setTab] = useState(null);
 
   const haalOp = async () => {
     setLaden(true);
@@ -106,6 +107,15 @@ function Binnen({ sessie }) {
 
   const ev = events[0];
   const mijnRollen = ev ? rollen.filter((r) => r.event_id === ev.id) : [];
+  const organisator = mijnRollen.length > 0;
+  const actief = tab ?? (organisator ? 'overzicht' : 'inschrijving');
+
+  const knoppen = [
+    organisator && ['overzicht', 'Overzicht'],
+    ['inschrijving', 'Mijn inschrijving'],
+    ['taken', 'Rollen en taken'],
+    ['formulieren', 'Formulieren'],
+  ].filter(Boolean);
 
   return (
     <div className="scherm">
@@ -132,7 +142,8 @@ function Binnen({ sessie }) {
           <p className="stil">Zoals op de dranklijst, bijvoorbeeld "Vael Jürgen".</p>
           <label>
             <span>Gezinsnaam</span>
-            <input id="gezinsnaam" name="gezinsnaam" required value={naam} onChange={(e) => setNaam(e.target.value)} />
+            <input id="gezinsnaam" name="gezinsnaam" required value={naam}
+                   onChange={(e) => setNaam(e.target.value)} />
           </label>
           <button type="submit">Gezin aanmaken</button>
         </form>
@@ -145,16 +156,20 @@ function Binnen({ sessie }) {
       {!laden && gezin && ev && (
         <>
           <EventBlok ev={ev} />
-          <Inschrijving ev={ev} gezin={gezin} rollen={mijnRollen} />
+          <nav className="menu geen-print">
+            {knoppen.map(([id, label]) => (
+              <button key={id} className={'menu-knop' + (actief === id ? ' aan' : '')}
+                      onClick={() => setTab(id)}>{label}</button>
+            ))}
+          </nav>
+          <Inschrijving ev={ev} gezin={gezin} rollen={mijnRollen} tab={actief} />
         </>
       )}
 
-      <RlsControle />
       <Sponsors />
     </div>
   );
 }
-
 function EventBlok({ ev }) {
   const datum = ev.datum
     ? new Date(ev.datum).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
