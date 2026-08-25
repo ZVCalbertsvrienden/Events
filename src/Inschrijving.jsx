@@ -201,6 +201,7 @@ function Organisatoren({ ev, functies }) {
   const [rollen, setRollen] = useState([]);
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState('');
+  const [toon, setToon] = useState(null);
 
   const haal = async () => {
     setLaden(true);
@@ -228,21 +229,31 @@ function Organisatoren({ ev, functies }) {
   const inkomsten = actief.filter((r) => r.status !== 'vrijgesteld').reduce((s, r) =>
     s + r.volw * (ev.prijs_volw || 0) + r.kind * (ev.prijs_kind || 0) + r.klein * (ev.prijs_klein || 0), 0);
 
+  const dieetLijst = actief.filter((r) => (r.dieet || []).length > 0 || r.dieet_nota);
   const helpers = {};
   actief.forEach((r) => (r.helpen || []).forEach((f) => {
     (helpers[f] = helpers[f] || []).push(r.gezin?.naam || '?');
   }));
 
-  const bezet = (f) => rollen.find((r) => r.functie === f);
+  const dranken = {};
+  actief.forEach((r) => (r.voorkeur_namen || []).forEach((n) => {
+    dranken[n] = (dranken[n] || 0) + r.volw;
+  }));
 
   return (
     <section className="kaart">
-      <h2>Organisatie</h2>
+      <h2>Overzicht</h2>
       {fout && <p className="fout">{fout}</p>}
 
+      <div className="groot-cijfers">
+        <div className="gc"><span className="gc-waarde">{som('volw')}</span><span className="gc-label">Volwassenen</span></div>
+        <div className="gc"><span className="gc-waarde">{som('kind')}</span><span className="gc-label">Jongeren 7–13</span></div>
+        <div className="gc"><span className="gc-waarde">{som('klein')}</span><span className="gc-label">Kinderen ≤6</span></div>
+        <div className="gc gc-tot"><span className="gc-waarde">{koppen}</span><span className="gc-label">Koppen totaal</span></div>
+      </div>
+
       <div className="cijfers">
-        {[['Gezinnen', actief.length], ['Koppen', koppen], ['Betalend', betalend],
-          ['Volwassenen', som('volw')], ['Kind 7–13', som('kind')], ['Kind ≤6', som('klein')],
+        {[['Gezinnen', actief.length], ['Betalende koppen', betalend],
           ['Vegetarisch', veg], ['Bijdragen', euro(inkomsten)]].map(([l, v]) => (
           <div key={l} className="cijfer-kaart">
             <span className="cijfer-label">{l}</span>
@@ -254,41 +265,70 @@ function Organisatoren({ ev, functies }) {
       {koppen !== betalend && (
         <p className="let-op">
           {koppen} koppen om eten voor te bestellen, {betalend} betalende koppen voor de inkomsten.
-          Het verschil zit bij gezinnen met status <em>vrijgesteld</em>.
         </p>
       )}
 
-      <h3>Deelnemers</h3>
-      <ul className="lijst">
-        {actief.map((r) => (
-          <li key={r.id}>
-            <span>
-              {r.gezin?.naam || '?'}
-              {r.status === 'vrijgesteld' && <span className="merk">vrijgesteld</span>}
-              {(r.dieet || []).length > 0 && <span className="dieet"> {r.dieet.join(', ')}</span>}
-            </span>
-            <span className="cijfer">{r.volw}/{r.kind}/{r.klein}</span>
-          </li>
+      <div className="uitklap-rij">
+        {[['deelnemers', `Deelnemers (${actief.length})`],
+          ['dranken', `Drankvoorkeuren (${Object.keys(dranken).length})`],
+          ['dieet', `Dieet en allergie (${dieetLijst.length})`],
+          ['helpers', 'Wie wil helpen']].map(([id, label]) => (
+          <button key={id} className={'pil' + (toon === id ? ' aan' : '')}
+                  onClick={() => setToon(toon === id ? null : id)}>{label}</button>
         ))}
-        {actief.length === 0 && <li><span className="stil">Nog geen inschrijvingen.</span></li>}
-      </ul>
+      </div>
 
-      <h3>Wie wil helpen</h3>
-      {functies.map((f) => {
-        const houder = bezet(f.naam);
-        return (
-          <div key={f.naam} className="helper-rij">
-            <span className="functie-naam">{f.naam}</span>
-            <span className="stil">
-              {houder ? 'toegekend' : (helpers[f.naam]?.join(', ') || 'niemand aangemeld')}
-            </span>
-          </div>
-        );
-      })}
-      <p className="stil" style={{ marginTop: 12 }}>
-        Rollen en functies ken je toe in Supabase, tabel <code>rol</code>. Eén CEO Ceremonie en
-        één Schatbewaarder per event; hoogstens drie functies per persoon.
-      </p>
+      {toon === 'deelnemers' && (
+        <ul className="lijst">
+          {actief.map((r) => (
+            <li key={r.id}>
+              <span>
+                {r.gezin?.naam || '?'}
+                {r.status === 'vrijgesteld' && <span className="merk">vrijgesteld</span>}
+              </span>
+              <span className="cijfer">{r.volw}/{r.kind}/{r.klein}</span>
+            </li>
+          ))}
+          {actief.length === 0 && <li><span className="stil">Nog geen inschrijvingen.</span></li>}
+        </ul>
+      )}
+
+      {toon === 'dranken' && (
+        <>
+          <p className="stil">Aantal volwassenen per drank. Basis voor de bestelling.</p>
+          <ul className="lijst">
+            {Object.entries(dranken).sort((a, b) => b[1] - a[1]).map(([n, aantal]) => (
+              <li key={n}><span>{n}</span><span className="cijfer">{aantal}</span></li>
+            ))}
+            {Object.keys(dranken).length === 0 && <li><span className="stil">Nog niets aangeduid.</span></li>}
+          </ul>
+        </>
+      )}
+
+      {toon === 'dieet' && (
+        <ul className="lijst">
+          {dieetLijst.map((r) => (
+            <li key={r.id}>
+              <span>{r.gezin?.naam}</span>
+              <span className="dieet">
+                {(r.dieet || []).join(', ')}{r.dieet_nota ? ` — ${r.dieet_nota}` : ''}
+              </span>
+            </li>
+          ))}
+          {dieetLijst.length === 0 && <li><span className="stil">Geen dieetwensen doorgegeven.</span></li>}
+        </ul>
+      )}
+
+      {toon === 'helpers' && (
+        <ul className="lijst">
+          {functies.map((f) => (
+            <li key={f.naam}>
+              <span className="functie-naam">{f.naam}</span>
+              <span className="stil">{helpers[f.naam]?.join(', ') || 'niemand aangemeld'}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
