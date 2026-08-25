@@ -238,3 +238,11 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .gc-label { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
 .uitklap-rij { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
 @media (max-width: 560px) { .groot-cijfers { grid-template-columns: repeat(2, 1fr); } }
+.drankblad { display: none; }
+@media print {
+  .drankblad { display: block !important; }
+  .drankblad ~ * { display: none !important; }
+}
+.db-rij { display: flex; align-items: baseline; gap: 10px; font-size: 10.5pt; padding: 3px 0; }
+.db-naam { flex: 1; }
+.db-aantal { font-family: var(--mono); font-weight: 700; width: 34px; text-align: right; }
