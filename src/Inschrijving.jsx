@@ -237,7 +237,7 @@ function Organisatoren({ ev, functies }) {
   const dieetLijst = actief.filter((r) => (r.dieet || []).length > 0 || r.dieet_nota);
   const helpers = {};
   actief.forEach((r) => (r.helpen || []).forEach((f) => {
-    (helpers[f] = helpers[f] || []).(r.gezin?.naam || '?');
+    (helpers[f] = helpers[f] || []).push(r.gezin?.naam || '?');
   }));
 
   const dranken = {};
