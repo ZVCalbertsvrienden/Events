@@ -260,10 +260,13 @@ export function Rollen({ ev, functies }) {
 
   if (laden) return <p className="stil">Leden ophalen…</p>;
 
+  const houdersVan = (f) =>
+    rollen.filter((x) => x.functie === f)
+          .map((x) => leden.find((l) => l.profiel_id === x.profiel_id)?.naam ?? 'onbekend');
+
   const houderVan = (f) => {
-    const r = rollen.find((x) => x.functie === f);
-    if (!r) return null;
-    return leden.find((l) => l.profiel_id === r.profiel_id)?.naam ?? 'onbekend';
+    const namen = houdersVan(f);
+    return namen.length ? namen.join(', ') : null;
   };
 
   return (
