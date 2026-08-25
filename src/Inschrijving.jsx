@@ -235,12 +235,12 @@ function Organisatoren({ ev, functies }) {
   const dieetLijst = actief.filter((r) => (r.dieet || []).length > 0 || r.dieet_nota);
   const helpers = {};
   actief.forEach((r) => (r.helpen || []).forEach((f) => {
-    (helpers[f] = helpers[f] || []).push(r.gezin?.naam || '?');
+    (helpers[f] = helpers[f] || []).(r.gezin?.naam || '?');
   }));
 
   const dranken = {};
   actief.forEach((r) => (r.voorkeur_namen || []).forEach((n) => {
-    dranken[n] = (dranken[n] || 0) + r.volw;
+    dranken[n] = (dranken[n] || 0) + 1;
   }));
 
   return (
@@ -298,7 +298,7 @@ function Organisatoren({ ev, functies }) {
 
             {toon === 'dranken' && (
         <>
-          <p className="stil">Aantal volwassenen per drank. Basis voor de bestelling.</p>
+          <p className="stil">Aantal gezinnen dat deze drank aanduidde. De hoeveelheden schat je zelf in.</p>
           <div className="rij-knoppen" style={{ marginTop: 0, marginBottom: 10 }}>
                         <button className="stille-knop" onClick={async () => {
               await kopieer(dranken, opties, ev);
@@ -356,7 +356,7 @@ function perCategorie(opties, dranken) {
   const groepen = {};
   opties.forEach((o) => {
     if (!dranken[o.naam]) return;
-    (groepen[o.categorie] = groepen[o.categorie] || []).push([o.naam, dranken[o.naam]]);
+    (groepen[o.categorie] = groepen[o.categorie] || []).([o.naam, dranken[o.naam]]);
   });
   return Object.entries(groepen);
 }
@@ -368,7 +368,7 @@ async function kopieer(dranken, opties, ev) {
     rijen.forEach(([n, a]) => regels.push(`  ${n}: ${a}`));
     regels.push('');
   });
-  regels.push('Aantal = volwassenen die deze drank aanduidden.');
+  regels.push('Aantal = gezinnen die deze drank aanduidden.');
   try {
     await navigator.clipboard.writeText(regels.join('\n'));
   } catch {
@@ -384,8 +384,8 @@ function Drankprint({ ev }) {
         supabase.from('drankvoorkeur_optie').select('*').order('volgorde'),
       ]);
       const d = {};
-      (i.data ?? []).filter((r) => r.status !== 'geannuleerd').forEach((r) =>
-        (r.voorkeur_namen || []).forEach((n) => { d[n] = (d[n] || 0) + r.volw; }));
+        (i.data ?? []).filter((r) => r.status !== 'geannuleerd').forEach((r) =>
+        (r.voorkeur_namen || []).forEach((n) => { d[n] = (d[n] || 0) + 1; }));
       setData({ dranken: d, opties: o.data ?? [] });
     })();
   }, [ev.id]);
@@ -402,7 +402,7 @@ function Drankprint({ ev }) {
         </div>
         <div className="tb-event">{ev.titel}</div>
       </div>
-      <p className="tb-trefwoorden">Aantal volwassenen dat deze drank aanduidde bij de inschrijving.</p>
+      <p className="tb-trefwoorden">Aantal gezinnen dat deze drank aanduidde bij de inschrijving. Schat de hoeveelheden zelf in.</p>
       {groepen.map(([cat, rijen]) => (
         <div key={cat}>
           <div className="tb-sectie"><span>{cat}</span><span className="tb-gedelegeerd">Te bestellen</span></div>
