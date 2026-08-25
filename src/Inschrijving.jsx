@@ -206,7 +206,9 @@ function Organisatoren({ ev, functies }) {
   const [opties, setOpties] = useState([]);
   const [gekopieerd, setGekopieerd] = useState(false);
 
-  const [i, r, o] = await Promise.all([
+  const haal = async () => {
+    setLaden(true);
+    const [i, r, o] = await Promise.all([
       supabase.from('inschrijving').select('*, gezin(naam, profiel_id)').eq('event_id', ev.id),
       supabase.from('rol').select('*').eq('event_id', ev.id),
       supabase.from('drankvoorkeur_optie').select('*').order('volgorde'),
@@ -214,7 +216,7 @@ function Organisatoren({ ev, functies }) {
     if (i.error) setFout(i.error.message);
     setLijst(i.data ?? []);
     setRollen(r.data ?? []);
-    setOpties(o.data ?? []); []);
+    setOpties(o.data ?? []);
     setLaden(false);
   };
 
