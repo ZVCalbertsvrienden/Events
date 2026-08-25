@@ -358,7 +358,7 @@ function perCategorie(opties, dranken) {
   const groepen = {};
   opties.forEach((o) => {
     if (!dranken[o.naam]) return;
-    (groepen[o.categorie] = groepen[o.categorie] || []).([o.naam, dranken[o.naam]]);
+    (groepen[o.categorie] = groepen[o.categorie] || []).push([o.naam, dranken[o.naam]]);
   });
   return Object.entries(groepen);
 }
