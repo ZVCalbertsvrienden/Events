@@ -158,6 +158,7 @@ export default function Inschrijving({ ev, gezin, rollen, tab }) {
       )}
 
       <Printblad ev={ev} opties={opties} functies={functies} />
+      {tab === 'overzicht' && organisator && <Drankprint ev={ev} />}/>
 
       {tab === 'taken' && <Functies functies={functies} />}
       {tab === 'taken' && (
@@ -202,16 +203,18 @@ function Organisatoren({ ev, functies }) {
   const [laden, setLaden] = useState(true);
   const [fout, setFout] = useState('');
   const [toon, setToon] = useState(null);
+  const [opties, setOpties] = useState([]);
+  const [gekopieerd, setGekopieerd] = useState(false);
 
-  const haal = async () => {
-    setLaden(true);
-    const [i, r] = await Promise.all([
+  const [i, r, o] = await Promise.all([
       supabase.from('inschrijving').select('*, gezin(naam, profiel_id)').eq('event_id', ev.id),
       supabase.from('rol').select('*').eq('event_id', ev.id),
+      supabase.from('drankvoorkeur_optie').select('*').order('volgorde'),
     ]);
     if (i.error) setFout(i.error.message);
     setLijst(i.data ?? []);
     setRollen(r.data ?? []);
+    setOpties(o.data ?? []); []);
     setLaden(false);
   };
 
@@ -297,9 +300,11 @@ function Organisatoren({ ev, functies }) {
         <>
           <p className="stil">Aantal volwassenen per drank. Basis voor de bestelling.</p>
           <div className="rij-knoppen" style={{ marginTop: 0, marginBottom: 10 }}>
-            <button className="stille-knop" onClick={() => kopieer(dranken, opties, ev)}>
-              Kopieer als tekst
-            </button>
+                        <button className="stille-knop" onClick={async () => {
+              await kopieer(dranken, opties, ev);
+              setGekopieerd(true);
+              setTimeout(() => setGekopieerd(false), 2500);
+            }}>Kopieer als tekst</button>
             <button className="stille-knop" onClick={() => window.print()}>
               Bestellijst afdrukken
             </button>
@@ -344,5 +349,72 @@ function Organisatoren({ ev, functies }) {
         </ul>
       )}
     </section>
+  );
+}
+
+function perCategorie(opties, dranken) {
+  const groepen = {};
+  opties.forEach((o) => {
+    if (!dranken[o.naam]) return;
+    (groepen[o.categorie] = groepen[o.categorie] || []).push([o.naam, dranken[o.naam]]);
+  });
+  return Object.entries(groepen);
+}
+
+async function kopieer(dranken, opties, ev) {
+  const regels = [`Drankbestelling — ${ev.titel}`, ''];
+  perCategorie(opties, dranken).forEach(([cat, rijen]) => {
+    regels.push(cat.toUpperCase());
+    rijen.forEach(([n, a]) => regels.push(`  ${n}: ${a}`));
+    regels.push('');
+  });
+  regels.push('Aantal = volwassenen die deze drank aanduidden.');
+  try {
+    await navigator.clipboard.writeText(regels.join('\n'));
+  } catch {
+    alert(regels.join('\n'));
+  }
+}
+function Drankprint({ ev }) {
+  const [data, setData] = useState({ dranken: {}, opties: [] });
+  useEffect(() => {
+    (async () => {
+      const [i, o] = await Promise.all([
+        supabase.from('inschrijving').select('volw, voorkeur_namen, status').eq('event_id', ev.id),
+        supabase.from('drankvoorkeur_optie').select('*').order('volgorde'),
+      ]);
+      const d = {};
+      (i.data ?? []).filter((r) => r.status !== 'geannuleerd').forEach((r) =>
+        (r.voorkeur_namen || []).forEach((n) => { d[n] = (d[n] || 0) + r.volw; }));
+      setData({ dranken: d, opties: o.data ?? [] });
+    })();
+  }, [ev.id]);
+
+  const groepen = perCategorie(data.opties, data.dranken);
+  if (groepen.length === 0) return null;
+
+  return (
+    <div className="drankblad">
+      <div className="tb-kop">
+        <div>
+          <div className="pb-club">{ev.organisatie || 'ZVC Albertsvrienden'}</div>
+          <div className="tb-functie">Drankbestelling</div>
+        </div>
+        <div className="tb-event">{ev.titel}</div>
+      </div>
+      <p className="tb-trefwoorden">Aantal volwassenen dat deze drank aanduidde bij de inschrijving.</p>
+      {groepen.map(([cat, rijen]) => (
+        <div key={cat}>
+          <div className="tb-sectie"><span>{cat}</span><span className="tb-gedelegeerd">Te bestellen</span></div>
+          {rijen.map(([n, a]) => (
+            <div key={n} className="db-rij">
+              <span className="db-naam">{n}</span>
+              <span className="db-aantal">{a}</span>
+              <span className="tb-stippel" />
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }
