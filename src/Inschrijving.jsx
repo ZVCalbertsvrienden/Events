@@ -293,15 +293,29 @@ function Organisatoren({ ev, functies }) {
         </ul>
       )}
 
-      {toon === 'dranken' && (
+            {toon === 'dranken' && (
         <>
           <p className="stil">Aantal volwassenen per drank. Basis voor de bestelling.</p>
-          <ul className="lijst">
-            {Object.entries(dranken).sort((a, b) => b[1] - a[1]).map(([n, aantal]) => (
-              <li key={n}><span>{n}</span><span className="cijfer">{aantal}</span></li>
-            ))}
-            {Object.keys(dranken).length === 0 && <li><span className="stil">Nog niets aangeduid.</span></li>}
-          </ul>
+          <div className="rij-knoppen" style={{ marginTop: 0, marginBottom: 10 }}>
+            <button className="stille-knop" onClick={() => kopieer(dranken, opties, ev)}>
+              Kopieer als tekst
+            </button>
+            <button className="stille-knop" onClick={() => window.print()}>
+              Bestellijst afdrukken
+            </button>
+            {gekopieerd && <span className="ok">✓ gekopieerd</span>}
+          </div>
+          {perCategorie(opties, dranken).map(([cat, rijen]) => (
+            <div key={cat}>
+              <p className="cat-naam">{cat}</p>
+              <ul className="lijst">
+                {rijen.map(([n, aantal]) => (
+                  <li key={n}><span>{n}</span><span className="cijfer">{aantal}</span></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {Object.keys(dranken).length === 0 && <p className="stil">Nog niets aangeduid.</p>}
         </>
       )}
 
