@@ -231,3 +231,10 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .menu-knop { font-size: 13px; padding: 8px 14px; border-radius: 20px;
   background: var(--kaart); color: var(--inkt); border: 1px solid var(--lijn); }
 .menu-knop.aan { background: var(--gras); color: var(--kalk); border-color: var(--gras); }
+.groot-cijfers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 4px 0 12px; }
+.gc { background: var(--gras); color: var(--kalk); border-radius: 6px; padding: 12px 10px; text-align: center; }
+.gc.gc-tot { background: var(--goud); color: #22190A; }
+.gc-waarde { display: block; font-family: var(--mono); font-size: 30px; line-height: 1.1; font-weight: 600; }
+.gc-label { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; }
+.uitklap-rij { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
+@media (max-width: 560px) { .groot-cijfers { grid-template-columns: repeat(2, 1fr); } }
