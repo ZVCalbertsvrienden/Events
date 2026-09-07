@@ -246,3 +246,7 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 .db-rij { display: flex; align-items: baseline; gap: 10px; font-size: 10.5pt; padding: 3px 0; }
 .db-naam { flex: 1; }
 .db-aantal { font-family: var(--mono); font-weight: 700; width: 34px; text-align: right; }
+.wissel { display: flex; flex-direction: column; gap: 6px; margin-top: 16px;
+  padding-top: 14px; border-top: 1px solid var(--papier); }
+.tekstknop { background: none; border: none; padding: 0; text-align: left;
+  color: var(--blad); font-size: 13px; text-decoration: underline; cursor: pointer; }
