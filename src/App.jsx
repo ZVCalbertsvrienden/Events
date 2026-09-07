@@ -148,6 +148,12 @@ function Binnen({ sessie }) {
       supabase.from('rol').select('*').eq('profiel_id', sessie.user.id),
     ]);
     if (e.error) console.error('event:', e.error);
+        if (g.error) {
+      console.error('gezin:', g.error);
+      setFout(`Je gegevens konden niet opgehaald worden (${g.error.code}). Ververs de pagina.`);
+      setLaden(false);
+      return;
+    }
     setGezin(g.data ?? null);
     setEvents(e.data ?? []);
     setRollen(r.data ?? []);
