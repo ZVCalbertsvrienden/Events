@@ -298,3 +298,54 @@ function RlsControle() {
     </section>
   );
 }
+function Wachtwoord({ email }) {
+  const [open, setOpen] = useState(false);
+  const [ww, setWw] = useState('');
+  const [bezig, setBezig] = useState(false);
+  const [fout, setFout] = useState('');
+  const [klaar, setKlaar] = useState(false);
+
+  const bewaar = async (e) => {
+    e.preventDefault();
+    setBezig(true); setFout('');
+    const { error } = await supabase.auth.updateUser({ password: ww });
+    if (error) {
+      setFout(error.message.includes('at least')
+        ? 'Kies een wachtwoord van minstens zes tekens.'
+        : error.message);
+    } else {
+      setKlaar(true); setWw(''); setOpen(false);
+      setTimeout(() => setKlaar(false), 4000);
+    }
+    setBezig(false);
+  };
+
+  if (klaar) return <p className="ok">✓ Je wachtwoord is ingesteld. Voortaan kan je met {email} en dit wachtwoord aanmelden.</p>;
+
+  if (!open) return (
+    <button className="tekstknop" onClick={() => setOpen(true)}>
+      Wachtwoord instellen of wijzigen
+    </button>
+  );
+
+  return (
+    <form className="kaart" onSubmit={bewaar}>
+      <h2>Wachtwoord instellen</h2>
+      <p className="stil">
+        Daarna kan je aanmelden zonder op een mail te wachten.
+      </p>
+      <label>
+        <span>Nieuw wachtwoord</span>
+        <input type="password" required minLength={6} value={ww}
+               onChange={(e) => setWw(e.target.value)} autoComplete="new-password" />
+      </label>
+      <div className="rij-knoppen" style={{ marginTop: 0 }}>
+        <button type="submit" disabled={bezig}>{bezig ? 'Bezig…' : 'Bewaren'}</button>
+        <button type="button" className="stille-knop" onClick={() => { setOpen(false); setFout(''); }}>
+          Annuleren
+        </button>
+      </div>
+      {fout && <p className="fout">{fout}</p>}
+    </form>
+  );
+}
