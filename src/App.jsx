@@ -189,6 +189,7 @@ function Binnen({ sessie }) {
           </div>
         </div>
         <p className="stil">Aangemeld als {sessie.user.email}</p>
+        <Wachtwoord email={sessie.user.email} />
       </header>
 
       {laden && <p className="stil">Gegevens ophalen…</p>}
