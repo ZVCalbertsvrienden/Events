@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from './lib/supabase.js';
 import Printblad from './Printblad.jsx';
 import { Taken, Rollen } from './Beheer.jsx';
+import { MijnRekening, Afrekeningen, AfrekeningPrint } from './Afrekening.jsx';
 
 const DIEET = ['Vegetarisch', 'Glutenvrij', 'Lactosevrij', 'Geen varkensvlees', 'Geen vis'];
 
