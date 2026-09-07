@@ -28,45 +28,103 @@ export default function App() {
 }
 
 function Aanmelden() {
+  const [modus, setModus] = useState('inloggen'); // inloggen | registreren | link
   const [email, setEmail] = useState('');
-  const [stand, setStand] = useState('invullen');
+  const [wachtwoord, setWachtwoord] = useState('');
+  const [bezig, setBezig] = useState(false);
   const [fout, setFout] = useState('');
+  const [gelukt, setGelukt] = useState('');
 
-  const stuur = async (e) => {
+  const vertaal = (e) => {
+    const m = e.message || '';
+    if (m.includes('Invalid login credentials')) return 'E-mailadres of wachtwoord klopt niet.';
+    if (m.includes('already registered')) return 'Dit adres bestaat al. Meld je aan met je wachtwoord, of vraag een inloglink.';
+    if (m.includes('at least')) return 'Kies een wachtwoord van minstens zes tekens.';
+    if (m.includes('rate limit')) return 'Even wachten: er zijn te veel mails verstuurd het afgelopen uur.';
+    return m;
+  };
+
+  const verstuur = async (e) => {
     e.preventDefault();
-    setStand('versturen');
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin + BASIS },
-    });
-    if (error) { setFout(error.message); setStand('fout'); }
-    else setStand('verstuurd');
+    setBezig(true); setFout(''); setGelukt('');
+
+    if (modus === 'link') {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { emailRedirectTo: window.location.origin + BASIS },
+      });
+      if (error) setFout(vertaal(error));
+      else setGelukt(`Er is een inlogknop verstuurd naar ${email}. Kijk ook in je spam.`);
+    } else if (modus === 'registreren') {
+      const { error } = await supabase.auth.signUp({ email, password: wachtwoord });
+      if (error) setFout(vertaal(error));
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password: wachtwoord });
+      if (error) setFout(vertaal(error));
+    }
+    setBezig(false);
   };
 
   return (
     <div className="scherm smal">
-      <img className="clublogo" src={BASIS + 'clublogo.png'} alt="ZVC Albertsvrienden" style={{ width: 72, height: 72 }} />
+      <img className="clublogo" src={BASIS + 'clublogo.png'} alt="ZVC Albertsvrienden"
+           style={{ width: 72, height: 72 }} />
       <p className="eyebrow" style={{ marginTop: 14 }}>ZVC Albertsvrienden</p>
-      <h1>Aanmelden</h1>
+      <h1>{modus === 'registreren' ? 'Account aanmaken' : 'Aanmelden'}</h1>
 
-      {stand === 'verstuurd' ? (
+      {gelukt ? (
         <div className="kaart">
-          <p>Er is een inlogknop verstuurd naar <strong>{email}</strong>. Open die mail op dit toestel.</p>
-          <p className="stil">Niets gekregen? Kijk in de spam.</p>
-          <button className="stille-knop" onClick={() => setStand('invullen')}>Ander adres proberen</button>
+          <p>{gelukt}</p>
+          <button className="stille-knop" onClick={() => { setGelukt(''); setModus('inloggen'); }}>
+            Terug
+          </button>
         </div>
       ) : (
-        <form className="kaart" onSubmit={stuur}>
+        <form className="kaart" onSubmit={verstuur}>
           <label>
             <span>E-mailadres</span>
             <input id="email" name="email" type="email" required value={email}
-                   onChange={(e) => setEmail(e.target.value)} placeholder="jij@voorbeeld.be" autoComplete="email" />
+                   onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
           </label>
-          <button type="submit" disabled={stand === 'versturen'}>
-            {stand === 'versturen' ? 'Versturen…' : 'Stuur me een inlogknop'}
+
+          {modus !== 'link' && (
+            <label>
+              <span>Wachtwoord</span>
+              <input id="wachtwoord" name="wachtwoord" type="password" required minLength={6}
+                     value={wachtwoord} onChange={(e) => setWachtwoord(e.target.value)}
+                     autoComplete={modus === 'registreren' ? 'new-password' : 'current-password'} />
+            </label>
+          )}
+
+          <button type="submit" disabled={bezig}>
+            {bezig ? 'Bezig…'
+              : modus === 'registreren' ? 'Account aanmaken'
+              : modus === 'link' ? 'Stuur me een inloglink'
+              : 'Aanmelden'}
           </button>
-          {stand === 'fout' && <p className="fout">{fout}</p>}
-          <p className="stil">Geen wachtwoord nodig. Je krijgt een mail met een knop die je aanmeldt.</p>
+
+          {fout && <p className="fout">{fout}</p>}
+
+          <div className="wissel">
+            {modus !== 'registreren' && (
+              <button type="button" className="tekstknop"
+                      onClick={() => { setModus('registreren'); setFout(''); }}>
+                Nog geen account? Maak er een aan
+              </button>
+            )}
+            {modus !== 'inloggen' && (
+              <button type="button" className="tekstknop"
+                      onClick={() => { setModus('inloggen'); setFout(''); }}>
+                Ik heb al een account
+              </button>
+            )}
+            {modus !== 'link' && (
+              <button type="button" className="tekstknop"
+                      onClick={() => { setModus('link'); setFout(''); }}>
+                Wachtwoord vergeten? Stuur een inloglink
+              </button>
+            )}
+          </div>
         </form>
       )}
     </div>
