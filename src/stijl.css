@@ -250,3 +250,37 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
   padding-top: 14px; border-top: 1px solid var(--papier); }
 .tekstknop { background: none; border: none; padding: 0; text-align: left;
   color: var(--blad); font-size: 13px; text-decoration: underline; cursor: pointer; }
+.rk-blok { margin-bottom: 16px; }
+.rk-regel { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0;
+  border-bottom: 1px solid var(--papier); }
+.rk-label { font-size: 13px; }
+.rk-label.dik { font-weight: 600; }
+.rk-bedrag { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.rk-bedrag.dik { font-size: 16px; font-weight: 700; }
+.rk-bedrag.kriek { color: var(--kriek); }
+.rk-bedrag.blad { color: var(--blad); }
+.rk-totaal { border-top: 2px solid var(--lijn); padding-top: 8px; margin-top: 4px; }
+.rk-betaal { margin-top: 18px; padding: 14px; background: var(--papier); border-radius: 5px; }
+.mono-groot { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+.af-lijst { margin-top: 16px; }
+.af-rij { border-bottom: 1px solid var(--papier); }
+.af-kop { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  width: 100%; background: none; border: none; padding: 9px 0; text-align: left;
+  color: var(--inkt); font-size: 14px; }
+.af-cijfers { display: flex; gap: 14px; align-items: baseline; }
+.af-saldo { font-family: var(--mono); font-size: 14px; font-weight: 700; min-width: 72px; text-align: right; }
+.af-saldo.kriek { color: var(--kriek); }
+.af-saldo.blad { color: var(--blad); }
+.af-uit { padding: 4px 0 16px; }
+
+.afblad { display: none; }
+@media print { .afblad { display: block !important; } }
+.af-pagina { page-break-after: always; }
+.af-pagina:last-child { page-break-after: auto; }
+.af-pr { display: flex; gap: 10px; font-size: 10.5pt; padding: 3px 0; }
+.af-pr.dik { font-weight: 700; font-size: 12pt; }
+.af-pr-a { flex: 1; }
+.af-pr-p { width: 70px; text-align: right; color: #555; font-size: 9pt; }
+.af-pr-b { width: 80px; text-align: right; font-family: var(--mono); }
+.af-eind { border-top: 2px solid #000; margin-top: 10px; padding-top: 8px; }
+.af-betaal { margin-top: 16px; padding: 10px; border: 1.5px solid #000; font-size: 10pt; }
