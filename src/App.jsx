@@ -177,6 +177,7 @@ function Binnen({ sessie }) {
   const knoppen = [
     organisator && ['overzicht', 'Overzicht'],
     ['inschrijving', 'Mijn inschrijving'],
+    ['rekening', 'Onze rekening'],
     ['taken', 'Rollen en taken'],
     ['formulieren', 'Formulieren'],
   ].filter(Boolean);
