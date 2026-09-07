@@ -159,8 +159,12 @@ export default function Inschrijving({ ev, gezin, rollen, tab }) {
       )}
 
       <Printblad ev={ev} opties={opties} functies={functies} />
-      {tab === 'overzicht' && organisator && <Drankprint ev={ev} />}/>
-
+      {tab === 'overzicht' && organisator && <Drankprint ev={ev} />}
+      
+      {tab === 'rekening' && <MijnRekening ev={ev} gezin={gezin} />}
+      {tab === 'rekening' && organisator && <Afrekeningen ev={ev} />}
+      {tab === 'rekening' && organisator && <AfrekeningPrint ev={ev} />}
+      
       {tab === 'taken' && <Functies functies={functies} />}
       {tab === 'taken' && (
         <Taken ev={ev} functies={functies}
