@@ -174,14 +174,19 @@ function Binnen({ sessie }) {
   const organisator = mijnRollen.length > 0;
   const actief = tab ?? (organisator ? 'overzicht' : 'inschrijving');
 
+  const magFinancien = mijnRollen.some(
+    (r) => r.rol === 'admin' || r.functie === 'CEO Ceremonie' || r.functie === 'Schatbewaarder'
+  );
+
   const knoppen = [
     organisator && ['overzicht', 'Overzicht'],
     ['inschrijving', 'Mijn inschrijving'],
     ['rekening', 'Onze rekening'],
+    magFinancien && ['financien', 'Financiën'],
     ['taken', 'Rollen en taken'],
     ['formulieren', 'Formulieren'],
   ].filter(Boolean);
-
+  
   return (
     <div className="scherm">
       <header>
@@ -228,7 +233,8 @@ function Binnen({ sessie }) {
                       onClick={() => setTab(id)}>{label}</button>
             ))}
           </nav>
-          <Inschrijving ev={ev} gezin={gezin} rollen={mijnRollen} tab={actief} />
+          <Inschrijving ev={ev} gezin={gezin} rollen={mijnRollen} tab={actief}
+              magFinancien={magFinancien} />
         </>
       )}
 
