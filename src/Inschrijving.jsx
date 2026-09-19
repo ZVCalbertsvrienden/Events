@@ -3,13 +3,14 @@ import { supabase } from './lib/supabase.js';
 import Printblad from './Printblad.jsx';
 import { Taken, Rollen } from './Beheer.jsx';
 import { MijnRekening, Afrekeningen, AfrekeningPrint } from './Afrekening.jsx';
+import Financien from './Financien.jsx';
 
 const DIEET = ['Vegetarisch', 'Glutenvrij', 'Lactosevrij', 'Geen varkensvlees', 'Geen vis'];
 
 const euro = (v) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(v || 0);
 
-export default function Inschrijving({ ev, gezin, rollen, tab }) {
+export default function Inschrijving({ ev, gezin, rollen, tab, magFinancien }) {
   const [opties, setOpties] = useState([]);
   const [functies, setFuncties] = useState([]);
   const [rij, setRij] = useState(null);
@@ -173,6 +174,7 @@ export default function Inschrijving({ ev, gezin, rollen, tab }) {
       )}
       {tab === 'overzicht' && organisator && <Organisatoren ev={ev} functies={functies} />}
       {tab === 'overzicht' && organisator && <Rollen ev={ev} functies={functies} />}
+      {tab === 'financien' && magFinancien && <Financien ev={ev} magBeheren={magFinancien} />}
     </>
   );
 }
