@@ -20,7 +20,7 @@ export function berekenFinancien({ ev, inschrijvingen, verbruik, kosten, kwijt }
     const drank = verbruik.filter((v) => v.drank?.voorgeschoten_door === gid)
       .reduce((s, v) => s + v.aantal * (v.drank?.inkoopprijs || 0), 0);
     const posten = kosten.filter((k) => k.gezin_id === gid)
-      .reduce((s, k) => s + (+k.werkelijk ?? 0 || +k.geraamd || 0), 0);
+      .reduce((s, k) => s + (k.werkelijk != null ? +k.werkelijk : +k.geraamd || 0), 0);
     return { drank, posten, totaal: drank + posten };
   };
 
