@@ -182,6 +182,7 @@ function Binnen({ sessie }) {
     organisator && ['overzicht', 'Overzicht'],
     ['inschrijving', 'Mijn inschrijving'],
     ['rekening', 'Onze rekening'],
+    organisator && ['dranken', 'Dranken'],
     magFinancien && ['financien', 'Financiën'],
     ['taken', 'Rollen en taken'],
     ['formulieren', 'Formulieren'],
