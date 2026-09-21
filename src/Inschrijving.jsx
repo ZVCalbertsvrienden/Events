@@ -4,6 +4,7 @@ import Printblad from './Printblad.jsx';
 import { Taken, Rollen } from './Beheer.jsx';
 import { MijnRekening, Afrekeningen, AfrekeningPrint } from './Afrekening.jsx';
 import Financien from './Financien.jsx';
+import Dranken from './Dranken.jsx';
 
 const DIEET = ['Vegetarisch', 'Glutenvrij', 'Lactosevrij', 'Geen varkensvlees', 'Geen vis'];
 
