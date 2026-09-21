@@ -3,6 +3,7 @@ import { supabase } from './lib/supabase.js';
 
 const REKENING = 'BE71 2930 2488 1969';
 const REKENING_NAAM = 'Jürgen Vael';
+const BASIS = import.meta.env.BASE_URL;
 
 const euro = (v) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(v || 0);
@@ -255,6 +256,25 @@ export function Afrekeningen({ ev }) {
   );
 }
 
+/* ─────────────  kleine versie van de eventkop, bovenaan elk blad  ───────────── */
+function EventKop({ ev }) {
+  const datum = ev.datum
+    ? new Date(ev.datum).toLocaleDateString('nl-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    : '';
+  return (
+    <div className="ek">
+      <img className="ek-logo" src={BASIS + 'ranch1000.png'} alt="" />
+      <div className="ek-tekst">
+        <div className="ek-org">{ev.organisatie || 'ZVC Albertsvrienden'}</div>
+        <div className="ek-titel">{ev.titel}</div>
+        <div className="ek-wanneer">{datum}{ev.uur ? ` · vanaf ${ev.uur.slice(0, 5)}` : ''}</div>
+        {ev.locatie && <div className="ek-adres">{ev.locatie}</div>}
+        {ev.leuze && <div className="ek-leuze">{ev.leuze}</div>}
+      </div>
+    </div>
+  );
+}
+
 /* ─────────────  printblad: één afrekening per gezin  ───────────── */
 export function AfrekeningPrint({ ev }) {
   const [rijen, setRijen] = useState([]);
@@ -269,12 +289,10 @@ export function AfrekeningPrint({ ev }) {
     <div className="afblad">
       {rijen.map((r) => (
         <div key={r.gezin_id} className="af-pagina">
-          <div className="tb-kop">
-            <div>
-              <div className="pb-club">{ev.organisatie || 'ZVC Albertsvrienden'}</div>
-              <div className="tb-functie">{r.naam}</div>
-            </div>
-            <div className="tb-event">Afrekening<br />{ev.titel}</div>
+          <EventKop ev={ev} />
+          <div className="af-gezin">
+            <span className="af-gezin-label">Afrekening voor</span>
+            <span className="af-gezin-naam">{r.naam}</span>
           </div>
 
           {regelsVan(ev, r).map(([groep, lijst]) => (
