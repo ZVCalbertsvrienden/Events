@@ -176,6 +176,7 @@ export default function Inschrijving({ ev, gezin, rollen, tab, magFinancien }) {
       {tab === 'overzicht' && organisator && <Organisatoren ev={ev} functies={functies} />}
       {tab === 'overzicht' && organisator && <Rollen ev={ev} functies={functies} />}
       {tab === 'financien' && magFinancien && <Financien ev={ev} magBeheren={magFinancien} />}
+      {tab === 'dranken' && organisator && <Dranken ev={ev} magFinancien={magFinancien} />}
     </>
   );
 }
