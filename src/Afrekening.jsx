@@ -6,200 +6,205 @@ const REKENING_NAAM = 'Jürgen Vael';
 
 const euro = (v) =>
   new Intl.NumberFormat('nl-BE', { style: 'currency', currency: 'EUR' }).format(v || 0);
+const bedragVan = (k) => (k.werkelijk != null ? +k.werkelijk : +k.geraamd || 0);
+const rond = (v) => Math.round(v * 100) / 100;
 
-/* ── de rekening van één gezin opbouwen ── */
-function bouwRekening(ev, inschrijving, regels) {
-  const i = inschrijving;
-  const bijdrage = !i || i.status === 'vrijgesteld' ? 0
-    : i.volw * (ev.prijs_volw || 0) + i.kind * (ev.prijs_kind || 0) + i.klein * (ev.prijs_klein || 0);
-  const drank = regels.reduce((s, r) => s + r.aantal * r.prijs, 0);
-  const betaald = +(i?.betaald || 0);
-  return { bijdrage, drank, totaal: bijdrage + drank, betaald, saldo: bijdrage + drank - betaald };
+/* ── alles ophalen: de cijfers komen uit de database, de details eromheen ── */
+async function laadAfrekening(ev) {
+  const [o, v, kw, k] = await Promise.all([
+    supabase.rpc('afrekening_overzicht', { ev: ev.id }),
+    supabase.from('verbruik').select('gezin_id, aantal, drank(naam, verkoopprijs, volgorde)')
+      .eq('event_id', ev.id),
+    supabase.from('kwijtschelding').select('gezin_id, soort, bedrag, reden').eq('event_id', ev.id),
+    supabase.from('kostenpost').select('gezin_id, post, werkelijk, geraamd')
+      .eq('event_id', ev.id).not('gezin_id', 'is', null),
+  ]);
+
+  const rijen = (o.data ?? []).map((r) => {
+    const perDrank = {};
+    (v.data ?? []).filter((x) => x.gezin_id === r.gezin_id).forEach((x) => {
+      const n = x.drank?.naam || '?';
+      if (!perDrank[n]) perDrank[n] = { naam: n, prijs: +x.drank?.verkoopprijs || 0, aantal: 0, volgorde: x.drank?.volgorde || 0 };
+      perDrank[n].aantal += x.aantal;
+    });
+    const netto = +r.bijdrage + +r.drank - +r.kwijt - +r.voorschot_drank - +r.voorschot_kosten;
+    return {
+      ...r,
+      betaald: +r.betaald || 0,
+      saldo: rond(+r.saldo),
+      netto: rond(netto),
+      drankRegels: Object.values(perDrank).filter((d) => d.aantal !== 0)
+        .sort((a, b) => a.volgorde - b.volgorde),
+      kwijtRegels: (kw.data ?? []).filter((x) => x.gezin_id === r.gezin_id),
+      kostRegels: (k.data ?? []).filter((x) => x.gezin_id === r.gezin_id && bedragVan(x) !== 0),
+    };
+  });
+
+  return { rijen, fout: o.error?.message || null };
 }
 
-function alsTekst(ev, naam, i, regels, r) {
-  const t = [];
-  t.push(`Afrekening ${ev.titel} — ${naam}`, '');
-  if (i) {
-    const d = [];
-    if (i.volw) d.push(`${i.volw} volwassene${i.volw > 1 ? 'n' : ''} × ${euro(ev.prijs_volw)}`);
-    if (i.kind) d.push(`${i.kind} × 7–13 j. × ${euro(ev.prijs_kind)}`);
-    if (i.klein) d.push(`${i.klein} × 6 j. of jonger (gratis)`);
-    t.push('INSCHRIJVING');
-    d.forEach((x) => t.push(`  ${x}`));
-    t.push(`  Subtotaal: ${euro(r.bijdrage)}`, '');
+/* ── de regels van één rekening, in groepen ── */
+function regelsVan(ev, r) {
+  const g = { Inschrijving: [], Drank: [], 'In mindering': [] };
+  if (r.status === 'vrijgesteld') {
+    g.Inschrijving.push({ label: 'Vrijgesteld van bijdrage', b: 0 });
+  } else {
+    if (r.volw) g.Inschrijving.push({ label: `${r.volw} × volwassene`, sub: euro(ev.prijs_volw), b: r.volw * ev.prijs_volw });
+    if (r.kind) g.Inschrijving.push({ label: `${r.kind} × 7 t.e.m. 13 j.`, sub: euro(ev.prijs_kind), b: r.kind * ev.prijs_kind });
+    if (r.klein) g.Inschrijving.push({ label: `${r.klein} × 6 j. of jonger`, sub: 'gratis', b: 0 });
   }
-  if (regels.length) {
-    t.push('DRANK');
-    regels.forEach((x) => t.push(`  ${x.aantal} × ${x.naam} à ${euro(x.prijs)} = ${euro(x.aantal * x.prijs)}`));
-    t.push(`  Subtotaal: ${euro(r.drank)}`, '');
+  r.drankRegels.forEach((d) =>
+    g.Drank.push({ label: `${d.aantal} × ${d.naam}`, sub: euro(d.prijs), b: d.aantal * d.prijs }));
+  r.kwijtRegels.forEach((k) =>
+    g['In mindering'].push({ label: `Kwijtgescholden (${k.soort})${k.reden ? ' — ' + k.reden : ''}`, b: -k.bedrag }));
+  if (+r.voorschot_drank)
+    g['In mindering'].push({ label: 'Drank voorgeschoten, aan inkoopprijs', b: -r.voorschot_drank });
+  r.kostRegels.forEach((k) =>
+    g['In mindering'].push({ label: `Voorgeschoten: ${k.post}`, b: -bedragVan(k) }));
+  return Object.entries(g).filter(([, l]) => l.length > 0);
+}
+
+function slotVan(r) {
+  const s = [{ label: 'Totaal', b: r.netto, dik: true }];
+  if (r.betaald > 0) s.push({ label: 'Reeds betaald', b: -r.betaald });
+  if (r.betaald < 0) s.push({ label: 'Reeds teruggestort', b: -r.betaald });
+  if (r.saldo > 0.004) s.push({ label: 'Nog te betalen', b: r.saldo, dik: true, kleur: 'kriek' });
+  else if (r.saldo < -0.004) s.push({ label: 'Wij storten jullie terug', b: -r.saldo, dik: true, kleur: 'blad' });
+  else s.push({ label: 'Vereffend', b: 0, dik: true, kleur: 'blad' });
+  return s;
+}
+
+function alsTekst(ev, r) {
+  const t = [`Afrekening ${ev.titel} — ${r.naam}`, ''];
+  regelsVan(ev, r).forEach(([groep, lijst]) => {
+    t.push(groep.toUpperCase());
+    lijst.forEach((x) => t.push(`  ${x.label}${x.sub ? ` à ${x.sub}` : ''}: ${euro(x.b)}`));
+    t.push('');
+  });
+  slotVan(r).forEach((x) => t.push(`${x.label}: ${euro(x.b)}`));
+  t.push('');
+  if (r.saldo > 0.004) {
+    t.push(`Over te schrijven op ${REKENING} (${REKENING_NAAM})`);
+    t.push(`Mededeling: BBQ26 ${r.naam}`);
+  } else if (r.saldo < -0.004) {
+    t.push('Bezorg ons jullie rekeningnummer, dan storten we dit bedrag terug.');
   }
-  t.push(`TOTAAL: ${euro(r.totaal)}`);
-  if (r.betaald) t.push(`Reeds betaald: ${euro(r.betaald)}`);
-  t.push(`Te betalen: ${euro(Math.max(r.saldo, 0))}`, '');
-  t.push(`Over te schrijven op ${REKENING} (${REKENING_NAAM})`);
-  t.push(`Mededeling: BBQ26 ${naam}`);
   return t.join('\n');
 }
 
-/* ─────────────  wat een gezin zelf ziet  ───────────── */
-export function MijnRekening({ ev, gezin }) {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      const [i, v] = await Promise.all([
-        supabase.from('inschrijving').select('*').eq('event_id', ev.id)
-          .eq('gezin_id', gezin.id).maybeSingle(),
-        supabase.from('verbruik').select('aantal, drank(naam, verkoopprijs, volgorde)')
-          .eq('event_id', ev.id).eq('gezin_id', gezin.id),
-      ]);
-      const regels = (v.data ?? []).map((x) => ({
-        naam: x.drank?.naam, prijs: x.drank?.verkoopprijs || 0,
-        aantal: x.aantal, volgorde: x.drank?.volgorde || 0,
-      })).sort((a, b) => a.volgorde - b.volgorde);
-      setData({ i: i.data, regels });
-    })();
-  }, [ev.id, gezin.id]);
-
-  if (!data) return <p className="stil">Rekening ophalen…</p>;
-  const { i, regels } = data;
-  const r = bouwRekening(ev, i, regels);
-
-  if (!i && regels.length === 0)
-    return (
-      <section className="kaart">
-        <h2>Onze rekening</h2>
-        <p className="stil">Er staat nog niets op jullie naam voor dit event.</p>
-      </section>
-    );
-
-  return (
-    <section className="kaart">
-      <h2>Onze rekening</h2>
-
-      {i && (
-        <div className="rk-blok">
-          <p className="cat-naam">Inschrijving</p>
-          {i.volw > 0 && <Regel label={`${i.volw} × volwassene`} sub={euro(ev.prijs_volw)} bedrag={i.volw * ev.prijs_volw} />}
-          {i.kind > 0 && <Regel label={`${i.kind} × 7 t.e.m. 13 j.`} sub={euro(ev.prijs_kind)} bedrag={i.kind * ev.prijs_kind} />}
-          {i.klein > 0 && <Regel label={`${i.klein} × 6 j. of jonger`} sub="gratis" bedrag={0} />}
-          {i.status === 'vrijgesteld' && <p className="stil">Jullie zijn vrijgesteld van de bijdrage.</p>}
-        </div>
-      )}
-
-      {regels.length > 0 && (
-        <div className="rk-blok">
-          <p className="cat-naam">Drank</p>
-          {regels.map((x) => (
-            <Regel key={x.naam} label={`${x.aantal} × ${x.naam}`} sub={euro(x.prijs)} bedrag={x.aantal * x.prijs} />
-          ))}
-        </div>
-      )}
-
-      <div className="rk-totaal">
-        <Regel label="Totaal" bedrag={r.totaal} dik />
-        {r.betaald > 0 && <Regel label="Reeds betaald" bedrag={-r.betaald} />}
-        <Regel label={r.saldo >= 0 ? 'Nog te betalen' : 'Terug te storten'}
-               bedrag={Math.abs(r.saldo)} dik kleur={r.saldo > 0 ? 'kriek' : 'blad'} />
-      </div>
-
-      {r.saldo > 0 && (
-        <div className="rk-betaal">
-          <p className="cat-naam">Betalen</p>
-          <p><span className="mono-groot">{REKENING}</span><br />
-             <span className="stil">op naam van {REKENING_NAAM}</span></p>
-          <p>Mededeling: <span className="mono-groot">BBQ26 {gezin.naam}</span></p>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function Regel({ label, sub, bedrag, dik, kleur }) {
+function Regel({ label, sub, b, dik, kleur }) {
   return (
     <div className="rk-regel">
       <span className={dik ? 'rk-label dik' : 'rk-label'}>
         {label} {sub && <span className="stil">à {sub}</span>}
       </span>
-      <span className={`rk-bedrag${dik ? ' dik' : ''}${kleur ? ' ' + kleur : ''}`}>{euro(bedrag)}</span>
+      <span className={`rk-bedrag${dik ? ' dik' : ''}${kleur ? ' ' + kleur : ''}`}>{euro(b)}</span>
     </div>
+  );
+}
+
+function Detail({ ev, r }) {
+  return (
+    <>
+      {regelsVan(ev, r).map(([groep, lijst]) => (
+        <div key={groep} className="rk-blok">
+          <p className="cat-naam">{groep}</p>
+          {lijst.map((x, i) => <Regel key={i} {...x} />)}
+        </div>
+      ))}
+      <div className="rk-totaal">
+        {slotVan(r).map((x, i) => <Regel key={i} {...x} />)}
+      </div>
+    </>
+  );
+}
+
+/* ─────────────  wat een gezin zelf ziet  ───────────── */
+export function MijnRekening({ ev, gezin }) {
+  const [r, setR] = useState(undefined);
+  const [fout, setFout] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      const res = await laadAfrekening(ev);
+      if (res.fout) setFout(res.fout);
+      setR(res.rijen.find((x) => x.gezin_id === gezin.id) || null);
+    })();
+  }, [ev.id, gezin.id]);
+
+  if (r === undefined) return <p className="stil">Rekening ophalen…</p>;
+
+  return (
+    <section className="kaart">
+      <h2>Onze rekening</h2>
+      {fout && <p className="fout">{fout}</p>}
+      {!r ? (
+        <p className="stil">Er staat nog niets op jullie naam voor dit event.</p>
+      ) : (
+        <>
+          <Detail ev={ev} r={r} />
+          {r.saldo > 0.004 && (
+            <div className="rk-betaal">
+              <p className="cat-naam">Betalen</p>
+              <p><span className="mono-groot">{REKENING}</span><br />
+                 <span className="stil">op naam van {REKENING_NAAM}</span></p>
+              <p>Mededeling: <span className="mono-groot">BBQ26 {gezin.naam}</span></p>
+            </div>
+          )}
+          {r.saldo < -0.004 && (
+            <div className="rk-betaal">
+              <p>De club stort jullie <strong>{euro(-r.saldo)}</strong> terug.
+                 Bezorg ons jullie rekeningnummer als we dat nog niet hebben.</p>
+            </div>
+          )}
+        </>
+      )}
+    </section>
   );
 }
 
 /* ─────────────  wat de organisatie ziet  ───────────── */
 export function Afrekeningen({ ev }) {
-  const [rijen, setRijen] = useState([]);
-  const [laden, setLaden] = useState(true);
+  const [rijen, setRijen] = useState(null);
   const [fout, setFout] = useState('');
   const [open, setOpen] = useState(null);
   const [gekopieerd, setGekopieerd] = useState('');
 
   const haal = async () => {
-    setLaden(true);
-    const [g, i, v] = await Promise.all([
-      supabase.from('gezin').select('id, naam').order('naam'),
-      supabase.from('inschrijving').select('*').eq('event_id', ev.id),
-      supabase.from('verbruik').select('gezin_id, aantal, drank(naam, verkoopprijs, volgorde)')
-        .eq('event_id', ev.id),
-    ]);
-    if (i.error) setFout(i.error.message);
-
-    const perGezin = {};
-    (v.data ?? []).forEach((x) => {
-      (perGezin[x.gezin_id] = perGezin[x.gezin_id] || []).push({
-        naam: x.drank?.naam, prijs: x.drank?.verkoopprijs || 0,
-        aantal: x.aantal, volgorde: x.drank?.volgorde || 0,
-      });
-    });
-
-    const lijst = (g.data ?? []).map((gz) => {
-      const insch = (i.data ?? []).find((x) => x.gezin_id === gz.id);
-      const regels = (perGezin[gz.id] || []).sort((a, b) => a.volgorde - b.volgorde);
-      return { gezin: gz, i: insch, regels, ...bouwRekening(ev, insch, regels) };
-    }).filter((x) => x.i || x.regels.length > 0);
-
-    setRijen(lijst);
-    setLaden(false);
+    const res = await laadAfrekening(ev);
+    if (res.fout) setFout(res.fout);
+    setRijen(res.rijen);
   };
 
   useEffect(() => { haal(); }, [ev.id]);
 
-  const kopieer = async (rij) => {
-    const tekst = alsTekst(ev, rij.gezin.naam, rij.i, rij.regels, rij);
+  const kopieer = async (tekst, id) => {
     try { await navigator.clipboard.writeText(tekst); } catch { alert(tekst); }
-    setGekopieerd(rij.gezin.id);
+    setGekopieerd(id);
     setTimeout(() => setGekopieerd(''), 2500);
   };
 
-  const kopieerAlles = async () => {
-    const tekst = rijen.map((r) => alsTekst(ev, r.gezin.naam, r.i, r.regels, r))
-      .join('\n\n' + '─'.repeat(40) + '\n\n');
-    try { await navigator.clipboard.writeText(tekst); } catch { alert(tekst); }
-    setGekopieerd('alles');
-    setTimeout(() => setGekopieerd(''), 2500);
-  };
-
-  const zetBetaald = async (rij, bedrag) => {
-    if (!rij.i) return;
+  const zetBetaald = async (r, bedrag) => {
     const { error } = await supabase.from('inschrijving')
-      .update({ betaald: bedrag }).eq('id', rij.i.id);
+      .update({ betaald: bedrag }).eq('event_id', ev.id).eq('gezin_id', r.gezin_id);
     if (error) setFout(error.message); else haal();
   };
 
-  if (laden) return <p className="stil">Afrekeningen ophalen…</p>;
+  if (!rijen) return <p className="stil">Afrekeningen ophalen…</p>;
 
-  const tot = (k) => rijen.reduce((s, r) => s + r[k], 0);
-  const open_ = rijen.reduce((s, r) => s + Math.max(r.saldo, 0), 0);
+  const som = (f) => rijen.reduce((s, r) => s + f(r), 0);
 
   return (
     <section className="kaart">
-      <h2>Afrekening</h2>
+      <h2>Alle afrekeningen</h2>
       {fout && <p className="fout">{fout}</p>}
 
       <div className="cijfers">
-        {[['Bijdragen', euro(tot('bijdrage'))], ['Drank', euro(tot('drank'))],
-          ['Ontvangen', euro(tot('betaald'))], ['Openstaand', euro(open_)]].map(([l, v]) => (
+        {[['Nog te ontvangen', euro(som((r) => Math.max(r.saldo, 0)))],
+          ['Terug te storten', euro(som((r) => Math.max(-r.saldo, 0)))],
+          ['Kwijtgescholden', euro(som((r) => +r.kwijt))],
+          ['Voorschotten', euro(som((r) => +r.voorschot_drank + +r.voorschot_kosten))]]
+          .map(([l, v]) => (
           <div key={l} className="cijfer-kaart">
             <span className="cijfer-label">{l}</span>
             <span className="cijfer-waarde">{v}</span>
@@ -208,51 +213,43 @@ export function Afrekeningen({ ev }) {
       </div>
 
       <div className="rij-knoppen" style={{ marginTop: 12 }}>
-        <button className="stille-knop" onClick={kopieerAlles}>Alle afrekeningen kopiëren</button>
+        <button className="stille-knop"
+                onClick={() => kopieer(rijen.map((r) => alsTekst(ev, r)).join('\n\n' + '─'.repeat(40) + '\n\n'), 'alles')}>
+          Alle afrekeningen kopiëren
+        </button>
         <button className="stille-knop" onClick={() => window.print()}>Afdrukken</button>
         {gekopieerd && <span className="ok">✓ gekopieerd</span>}
       </div>
 
       <div className="af-lijst">
         {rijen.map((r) => (
-          <div key={r.gezin.id} className="af-rij">
-            <button className="af-kop" onClick={() => setOpen(open === r.gezin.id ? null : r.gezin.id)}>
-              <span>{r.gezin.naam}</span>
-              <span className="af-cijfers">
-                <span className="stil">{euro(r.bijdrage)} + {euro(r.drank)}</span>
-                <span className={r.saldo > 0 ? 'af-saldo kriek' : 'af-saldo blad'}>{euro(r.saldo)}</span>
+          <div key={r.gezin_id} className="af-rij">
+            <button className="af-kop" onClick={() => setOpen(open === r.gezin_id ? null : r.gezin_id)}>
+              <span>{r.naam}</span>
+              <span className={'af-saldo ' + (r.saldo > 0.004 ? 'kriek' : 'blad')}>
+                {r.saldo < -0.004 ? `terug ${euro(-r.saldo)}` : euro(r.saldo)}
               </span>
             </button>
-            {open === r.gezin.id && (
+            {open === r.gezin_id && (
               <div className="af-uit">
-                {r.i && (
-                  <p className="stil">
-                    Inschrijving: {r.i.volw} volw. / {r.i.kind} × 7–13 / {r.i.klein} × ≤6
-                    {r.i.status === 'vrijgesteld' && ' — vrijgesteld'}
-                  </p>
-                )}
-                {r.regels.map((x) => (
-                  <Regel key={x.naam} label={`${x.aantal} × ${x.naam}`} sub={euro(x.prijs)}
-                         bedrag={x.aantal * x.prijs} />
-                ))}
-                <Regel label="Totaal" bedrag={r.totaal} dik />
-                <div className="rij-knoppen" style={{ marginTop: 10 }}>
+                <Detail ev={ev} r={r} />
+                <div className="rij-knoppen" style={{ marginTop: 12 }}>
                   <label style={{ margin: 0 }}>
-                    <span>Ontvangen</span>
+                    <span>Ontvangen (+) of teruggestort (−)</span>
                     <input type="number" step="0.01" defaultValue={r.betaald}
-                           style={{ width: 110, fontFamily: 'var(--mono)', textAlign: 'right' }}
+                           style={{ width: 120, fontFamily: 'var(--mono)', textAlign: 'right' }}
                            onBlur={(e) => zetBetaald(r, +e.target.value || 0)} />
                   </label>
-                  <button className="stille-knop" onClick={() => zetBetaald(r, r.totaal)}>
-                    Volledig betaald
+                  <button className="stille-knop" onClick={() => zetBetaald(r, r.netto)}>Vereffend</button>
+                  <button className="stille-knop" onClick={() => kopieer(alsTekst(ev, r), r.gezin_id)}>
+                    Kopieer tekst
                   </button>
-                  <button className="stille-knop" onClick={() => kopieer(r)}>Kopieer tekst</button>
                 </div>
               </div>
             )}
           </div>
         ))}
-        {rijen.length === 0 && <p className="stil">Nog geen inschrijvingen of drankverbruik.</p>}
+        {rijen.length === 0 && <p className="stil">Nog geen inschrijvingen.</p>}
       </div>
     </section>
   );
@@ -263,26 +260,7 @@ export function AfrekeningPrint({ ev }) {
   const [rijen, setRijen] = useState([]);
 
   useEffect(() => {
-    (async () => {
-      const [g, i, v] = await Promise.all([
-        supabase.from('gezin').select('id, naam').order('naam'),
-        supabase.from('inschrijving').select('*').eq('event_id', ev.id),
-        supabase.from('verbruik').select('gezin_id, aantal, drank(naam, verkoopprijs, volgorde)')
-          .eq('event_id', ev.id),
-      ]);
-      const perGezin = {};
-      (v.data ?? []).forEach((x) => {
-        (perGezin[x.gezin_id] = perGezin[x.gezin_id] || []).push({
-          naam: x.drank?.naam, prijs: x.drank?.verkoopprijs || 0,
-          aantal: x.aantal, volgorde: x.drank?.volgorde || 0,
-        });
-      });
-      setRijen((g.data ?? []).map((gz) => {
-        const insch = (i.data ?? []).find((x) => x.gezin_id === gz.id);
-        const regels = (perGezin[gz.id] || []).sort((a, b) => a.volgorde - b.volgorde);
-        return { gezin: gz, i: insch, regels, ...bouwRekening(ev, insch, regels) };
-      }).filter((x) => x.i || x.regels.length > 0));
-    })();
+    (async () => { setRijen((await laadAfrekening(ev)).rijen); })();
   }, [ev.id]);
 
   if (rijen.length === 0) return null;
@@ -290,57 +268,51 @@ export function AfrekeningPrint({ ev }) {
   return (
     <div className="afblad">
       {rijen.map((r) => (
-        <div key={r.gezin.id} className="af-pagina">
+        <div key={r.gezin_id} className="af-pagina">
           <div className="tb-kop">
             <div>
               <div className="pb-club">{ev.organisatie || 'ZVC Albertsvrienden'}</div>
-              <div className="tb-functie">{r.gezin.naam}</div>
+              <div className="tb-functie">{r.naam}</div>
             </div>
             <div className="tb-event">Afrekening<br />{ev.titel}</div>
           </div>
 
-          {r.i && (
-            <>
-              <div className="tb-sectie"><span>Inschrijving</span></div>
-              {r.i.volw > 0 && <PrintRegel a={`${r.i.volw} × volwassene`} p={euro(ev.prijs_volw)} b={r.i.volw * ev.prijs_volw} />}
-              {r.i.kind > 0 && <PrintRegel a={`${r.i.kind} × 7 t.e.m. 13 j.`} p={euro(ev.prijs_kind)} b={r.i.kind * ev.prijs_kind} />}
-              {r.i.klein > 0 && <PrintRegel a={`${r.i.klein} × 6 j. of jonger`} p="gratis" b={0} />}
-            </>
-          )}
-
-          {r.regels.length > 0 && (
-            <>
-              <div className="tb-sectie"><span>Drank</span></div>
-              {r.regels.map((x) => (
-                <PrintRegel key={x.naam} a={`${x.aantal} × ${x.naam}`} p={euro(x.prijs)} b={x.aantal * x.prijs} />
+          {regelsVan(ev, r).map(([groep, lijst]) => (
+            <div key={groep}>
+              <div className="tb-sectie"><span>{groep}</span></div>
+              {lijst.map((x, i) => (
+                <div key={i} className="af-pr">
+                  <span className="af-pr-a">{x.label}</span>
+                  <span className="af-pr-p">{x.sub || ''}</span>
+                  <span className="af-pr-b">{euro(x.b)}</span>
+                </div>
               ))}
-            </>
-          )}
+            </div>
+          ))}
 
           <div className="af-eind">
-            <PrintRegel a="Totaal" b={r.totaal} dik />
-            {r.betaald > 0 && <PrintRegel a="Reeds betaald" b={-r.betaald} />}
-            <PrintRegel a={r.saldo >= 0 ? 'Nog te betalen' : 'Terug te storten'} b={Math.abs(r.saldo)} dik />
+            {slotVan(r).map((x, i) => (
+              <div key={i} className={'af-pr' + (x.dik ? ' dik' : '')}>
+                <span className="af-pr-a">{x.label}</span>
+                <span className="af-pr-p" />
+                <span className="af-pr-b">{euro(x.b)}</span>
+              </div>
+            ))}
           </div>
 
-          {r.saldo > 0 && (
+          {r.saldo > 0.004 && (
             <p className="af-betaal">
               Over te schrijven op <strong>{REKENING}</strong> op naam van {REKENING_NAAM}.<br />
-              Mededeling: <strong>BBQ26 {r.gezin.naam}</strong>
+              Mededeling: <strong>BBQ26 {r.naam}</strong>
+            </p>
+          )}
+          {r.saldo < -0.004 && (
+            <p className="af-betaal">
+              De club stort jullie {euro(-r.saldo)} terug. Bezorg ons jullie rekeningnummer.
             </p>
           )}
         </div>
       ))}
-    </div>
-  );
-}
-
-function PrintRegel({ a, p, b, dik }) {
-  return (
-    <div className={'af-pr' + (dik ? ' dik' : '')}>
-      <span className="af-pr-a">{a}</span>
-      <span className="af-pr-p">{p || ''}</span>
-      <span className="af-pr-b">{euro(b)}</span>
     </div>
   );
 }
