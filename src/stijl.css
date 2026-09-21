@@ -341,4 +341,4 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
   .dk-rij { grid-template-columns: 1fr 1fr; }
   .dr-rij { grid-template-columns: 1fr auto; }
   .dr-prijs, .dr-sub { display: none; }
-}
+}}
