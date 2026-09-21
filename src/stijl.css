@@ -312,4 +312,33 @@ h3 { font-size: 13px; font-weight: 600; margin: 22px 0 8px; }
 @media (max-width: 640px) {
   .kp-kop { display: none; }
   .kp-rij, .kw-nieuw { grid-template-columns: 1fr 1fr; }
+.dr-gezinnen { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+.dr-bedrag { font-family: var(--mono); font-size: 11px; opacity: .8; }
+.dr-rij { display: grid; grid-template-columns: 1fr 70px auto 76px; gap: 10px;
+  align-items: center; padding: 5px 0; border-bottom: 1px solid var(--papier); font-size: 14px; }
+.dr-prijs { font-family: var(--mono); font-size: 12px; text-align: right; }
+.dr-sub { font-family: var(--mono); font-size: 13px; text-align: right; }
+.dr-teller { display: inline-flex; align-items: center; gap: 4px; }
+.dr-teller button { padding: 4px 11px; font-size: 16px; line-height: 1; }
+.dr-teller input { width: 52px; text-align: center; font-family: var(--mono); padding: 5px 4px; }
+.raster-wrap { overflow-x: auto; margin-top: 8px; }
+.raster { border-collapse: collapse; font-size: 12px; }
+.raster th, .raster td { border: 1px solid var(--lijn); padding: 4px 7px; text-align: center; white-space: nowrap; }
+.raster th.v { writing-mode: vertical-rl; transform: rotate(180deg); height: 92px; font-weight: 500; }
+.raster .n { text-align: left; }
+.raster .bedrag { font-family: var(--mono); text-align: right; }
+.raster tfoot td { font-weight: 600; background: var(--papier); }
+.raster tr.klikbaar { cursor: pointer; }
+.raster tr.klikbaar:hover td { background: var(--papier); }
+.dk-kop, .dk-rij { display: grid; grid-template-columns: 1fr 100px 80px 76px 76px 140px 28px;
+  gap: 6px; align-items: center; padding: 4px 0; }
+.dk-kop { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--grijs);
+  border-bottom: 1px solid var(--lijn); }
+.dk-rij input, .dk-rij select { padding: 5px 7px; font-size: 13px; }
+.dk-rij.nieuw { padding-top: 10px; }
+@media (max-width: 640px) {
+  .dk-kop { display: none; }
+  .dk-rij { grid-template-columns: 1fr 1fr; }
+  .dr-rij { grid-template-columns: 1fr auto; }
+  .dr-prijs, .dr-sub { display: none; }
 }
